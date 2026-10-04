@@ -23,8 +23,7 @@ services:
   redis:
     image: redis:8.10.2
     container_name: redis
-    environment:
-      - REDIS_ARGS=--requirepass ${REDIS_PASSWORD} --appendonly yes
+    command: redis-server --requirepass ${REDIS_PASSWORD} --appendonly yes
     ports:
       - "6379:6379"
     volumes:
