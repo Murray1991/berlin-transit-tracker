@@ -1,4 +1,16 @@
 services:
+  ingestion-service:
+    build:
+      context: ./ingestion-service
+    container_name: ingestion-service
+    environment:
+      SPRING_REDIS_HOST: redis
+      SPRING_REDIS_PORT: 6379
+    ports:
+      - "8080:8080"
+    depends_on:
+      - redis
+
   bvg-api:
     image: derhuerst/bvg-rest:6
     container_name: bvg-api
