@@ -24,6 +24,9 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-data-redis-reactive-test'
     testImplementation 'org.springframework.boot:spring-boot-starter-webflux-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+    developmentOnly 'org.springframework.boot:spring-boot-docker-compose'
+    developmentOnly 'org.springframework.boot:spring-boot-devtools'
 }
 
 tasks.named('test') {
