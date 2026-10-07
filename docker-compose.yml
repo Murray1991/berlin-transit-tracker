@@ -4,12 +4,15 @@ services:
       context: ./ingestion-service
     container_name: ingestion-service
     environment:
+      BVG_API_HOST: bvg-api
+      BVG_API_PORT: 3000
       SPRING_REDIS_HOST: redis
       SPRING_REDIS_PORT: 6379
     ports:
       - "8080:8080"
     depends_on:
       - redis
+      - bvg-api
 
   bvg-api:
     image: derhuerst/bvg-rest:6
