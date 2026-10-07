@@ -6,3 +6,9 @@ spring:
     compose:
       file: ../docker-compose.yml
     lifecycle-management: start-only
+
+bvg:
+  api:
+    scheme: "http" # optional, http is default
+    host: ${BVG_API_HOST:localhost}
+    port: ${BVG_API_PORT:3000}
