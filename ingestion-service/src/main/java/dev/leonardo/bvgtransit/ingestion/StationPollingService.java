@@ -2,10 +2,12 @@ package dev.leonardo.bvgtransit.ingestion;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -18,12 +20,15 @@ public class StationPollingService {
     private final Integer BATCH_SIZE = 25;
 
     private final WebClient bvgWebClient;
+    private final ReactiveRedisTemplate<String, String> redisTemplate;
 
     public StationPollingService(
             StationRepository stationRepository_,
-            WebClient bvgWebClient_) {
+            WebClient bvgWebClient_,
+            ReactiveRedisTemplate<String, String> redisTemplate_) {
         stations = stationRepository_.getStations();
         bvgWebClient = bvgWebClient_;
+        redisTemplate = redisTemplate_;
     }
 
     @Scheduled(fixedRate = 15000)
@@ -41,9 +46,17 @@ public class StationPollingService {
                                     + "/departures?tram=false&bus=false&ferry=false&express=false&regional=false")
                     .retrieve()
                     .bodyToMono(String.class)
+                    .flatMap(
+                            json ->
+                                    redisTemplate
+                                            .opsForValue()
+                                            .set(
+                                                    "station:" + station.id() + ":departures",
+                                                    json,
+                                                    Duration.ofSeconds(180)))
                     .subscribe(
-                            json -> log.info("{} - {} - {}", index, station.id(), json),
-                            error -> log.error(error.getMessage(), error));
+                            _ -> log.info("Stored departures for station {}", station.id()),
+                            error -> log.error("Polling station {} failed", station.id(), error));
         }
     }
 }

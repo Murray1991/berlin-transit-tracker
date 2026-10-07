@@ -2,6 +2,12 @@ spring:
   application:
     name: ingestion-service
 
+  data:
+    redis:
+      host: ${SPRING_REDIS_HOST}
+      port: ${SPRING_REDIS_PORT}
+      password: ${SPRING_REDIS_PASS}
+
   docker:
     compose:
       file: ../docker-compose.yml
