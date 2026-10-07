@@ -2,11 +2,9 @@ package dev.leonardo.bvgtransit.ingestion;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -22,19 +20,10 @@ public class StationPollingService {
     private final WebClient bvgWebClient;
 
     public StationPollingService(
-            StationRepository stationRepository,
-            @Value("${bvg.api.scheme:http}") String scheme,
-            @Value("${bvg.api.host}") String host,
-            @Value("${bvg.api.port}") int port) {
-        stations = stationRepository.getStations();
-        String bvgBaseURL =
-                UriComponentsBuilder.newInstance()
-                        .scheme(scheme)
-                        .host(host)
-                        .port(port)
-                        .build()
-                        .toUriString();
-        bvgWebClient = WebClient.builder().baseUrl(bvgBaseURL).build();
+            StationRepository stationRepository_,
+            WebClient bvgWebClient_) {
+        stations = stationRepository_.getStations();
+        bvgWebClient = bvgWebClient_;
     }
 
     @Scheduled(fixedRate = 15000)
