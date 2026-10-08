@@ -1,11 +1,15 @@
 package dev.leonardo.bvgtransit.ingestion;
 
+import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
+
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.time.Duration;
 import java.util.List;
@@ -34,29 +38,45 @@ public class StationPollingService {
     @Scheduled(fixedRate = 15000)
     public void pollDepartures() {
         int start = currentIndex.getAndUpdate(x -> (x + BATCH_SIZE) % stations.size());
-        log.info("Polling {} stations from index {}", BATCH_SIZE, start);
-        for (int i = 0; i < BATCH_SIZE; i++) {
-            int index = (start + i) % stations.size();
-            var station = stations.get(index);
-            bvgWebClient
-                    .get()
-                    .uri(
-                            "/stops/"
-                                    + station.id()
-                                    + "/departures?tram=false&bus=false&ferry=false&express=false&regional=false")
-                    .retrieve()
-                    .bodyToMono(String.class)
-                    .flatMap(
-                            json ->
-                                    redisTemplate
-                                            .opsForValue()
-                                            .set(
-                                                    "station:" + station.id() + ":departures",
-                                                    json,
-                                                    Duration.ofSeconds(180)))
-                    .subscribe(
-                            _ -> log.info("Stored departures for station {}", station.id()),
-                            error -> log.error("Polling station {} failed", station.id(), error));
-        }
+        log.debug("Polling {} stations from index {}", BATCH_SIZE, start);
+        Flux.range(0, BATCH_SIZE)
+                .map(i -> stations.get((start + i) % stations.size()))
+                .map(StationRepository.StationDTO::id)
+                .flatMap(
+                        stationID ->
+                                fetchAndStore(stationID)
+                                        .onErrorResume(
+                                                e -> {
+                                                    log.error(
+                                                            "Polling station {} failed: {}",
+                                                            stationID,
+                                                            e.getMessage(),
+                                                            e);
+                                                    return Mono.empty();
+                                                }),
+                        10)
+                .then()
+                .subscribe(_ -> {}, error -> log.error("Polling batch of stations failed", error));
+    }
+
+    private Mono<Void> fetchAndStore(String stationID) {
+        return fetchDepartures(stationID).flatMap(json -> storeDepartures(stationID, json)).then();
+    }
+
+    private @NonNull Mono<Boolean> storeDepartures(String stationID, String json) {
+        return redisTemplate
+                .opsForValue()
+                .set("station:" + stationID + ":departures", json, Duration.ofSeconds(180));
+    }
+
+    private @NonNull Mono<String> fetchDepartures(String stationID) {
+        return bvgWebClient
+                .get()
+                .uri(
+                        "/stops/"
+                                + stationID
+                                + "/departures?tram=false&bus=false&ferry=false&express=false&regional=false")
+                .retrieve()
+                .bodyToMono(String.class);
     }
 }
