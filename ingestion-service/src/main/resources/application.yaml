@@ -11,7 +11,11 @@ spring:
   docker:
     compose:
       file: ../docker-compose.yml
-    lifecycle-management: start-only
+      start:
+        arguments:
+          - --scale
+          - ingestion-service=0
+      lifecycle-management: start-only
 
 bvg:
   api:
