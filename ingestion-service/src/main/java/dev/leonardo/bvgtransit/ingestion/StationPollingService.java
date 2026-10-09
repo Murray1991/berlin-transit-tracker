@@ -3,6 +3,7 @@ package dev.leonardo.bvgtransit.ingestion;
 import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -21,25 +22,29 @@ public class StationPollingService {
 
     private final AtomicInteger currentIndex = new AtomicInteger(0);
     private final List<StationRepository.StationDTO> stations;
-    private final Integer BATCH_SIZE = 25;
 
     private final WebClient bvgWebClient;
     private final ReactiveRedisTemplate<String, String> redisTemplate;
 
+    private final PollingProperties pollingProperties;
+
     public StationPollingService(
             StationRepository stationRepository_,
             WebClient bvgWebClient_,
-            ReactiveRedisTemplate<String, String> redisTemplate_) {
+            ReactiveRedisTemplate<String, String> redisTemplate_,
+            PollingProperties pollingProperties_) {
         stations = stationRepository_.getStations();
         bvgWebClient = bvgWebClient_;
         redisTemplate = redisTemplate_;
+        pollingProperties = pollingProperties_;
     }
 
-    @Scheduled(fixedRate = 15000)
+    @Scheduled(fixedRateString = "${ingestion.polling.interval-ms}")
     public void pollDepartures() {
-        int start = currentIndex.getAndUpdate(x -> (x + BATCH_SIZE) % stations.size());
-        log.debug("Polling {} stations from index {}", BATCH_SIZE, start);
-        Flux.range(0, BATCH_SIZE)
+        int batchSize = pollingProperties.batchSize();
+        int start = currentIndex.getAndUpdate(x -> (x + batchSize) % stations.size());
+        log.debug("Polling {} stations from index {}", batchSize, start);
+        Flux.range(0, batchSize)
                 .map(i -> stations.get((start + i) % stations.size()))
                 .map(StationRepository.StationDTO::id)
                 .flatMap(
@@ -79,4 +84,7 @@ public class StationPollingService {
                 .retrieve()
                 .bodyToMono(String.class);
     }
+
+    @ConfigurationProperties("ingestion.polling")
+    public record PollingProperties(int batchSize, int intervalMs) {}
 }

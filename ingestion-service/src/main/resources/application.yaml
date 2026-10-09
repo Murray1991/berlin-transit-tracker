@@ -17,6 +17,11 @@ spring:
           - ingestion-service=0
       lifecycle-management: start-only
 
+ingestion:
+  polling:
+    batch-size: 25
+    interval-ms: 15000
+
 bvg:
   api:
     scheme: "http" # optional, http is default
