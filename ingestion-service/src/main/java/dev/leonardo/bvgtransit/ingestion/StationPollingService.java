@@ -7,7 +7,6 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import org.springframework.web.reactive.function.client.WebClient;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -23,18 +22,18 @@ public class StationPollingService {
     private final AtomicInteger currentIndex = new AtomicInteger(0);
     private final List<StationRepository.StationDTO> stations;
 
-    private final WebClient bvgWebClient;
+    private final BvgDeparturesClient bvgDeparturesClient;
     private final ReactiveRedisTemplate<String, String> redisTemplate;
 
     private final PollingProperties pollingProperties;
 
     public StationPollingService(
             StationRepository stationRepository_,
-            WebClient bvgWebClient_,
+            BvgDeparturesClient bvgDeparturesClient_,
             ReactiveRedisTemplate<String, String> redisTemplate_,
             PollingProperties pollingProperties_) {
         stations = stationRepository_.getStations();
-        bvgWebClient = bvgWebClient_;
+        bvgDeparturesClient = bvgDeparturesClient_;
         redisTemplate = redisTemplate_;
         pollingProperties = pollingProperties_;
 
@@ -71,24 +70,16 @@ public class StationPollingService {
     }
 
     private Mono<Void> fetchAndStore(String stationID) {
-        return fetchDepartures(stationID).flatMap(json -> storeDepartures(stationID, json)).then();
+        return bvgDeparturesClient
+                .fetchDepartures(stationID)
+                .flatMap(json -> storeDepartures(stationID, json))
+                .then();
     }
 
     private @NonNull Mono<Boolean> storeDepartures(String stationID, String json) {
         return redisTemplate
                 .opsForValue()
                 .set("station:" + stationID + ":departures", json, Duration.ofSeconds(180));
-    }
-
-    private @NonNull Mono<String> fetchDepartures(String stationID) {
-        return bvgWebClient
-                .get()
-                .uri(
-                        "/stops/"
-                                + stationID
-                                + "/departures?tram=false&bus=false&ferry=false&express=false&regional=false")
-                .retrieve()
-                .bodyToMono(String.class);
     }
 
     @ConfigurationProperties("ingestion.polling")
