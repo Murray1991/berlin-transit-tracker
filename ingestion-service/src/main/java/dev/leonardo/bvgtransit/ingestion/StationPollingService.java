@@ -43,10 +43,15 @@ public class StationPollingService {
 
     @Scheduled(fixedRateString = "${ingestion.polling.interval-ms}")
     public void pollDepartures() {
+        pollNextBatch()
+                .subscribe(_ -> {}, error -> log.error("Polling batch of stations failed", error));
+    }
+
+    protected Mono<Void> pollNextBatch() {
         int batchSize = pollingProperties.batchSize();
         int start = currentIndex.getAndUpdate(x -> (x + batchSize) % stations.size());
         log.debug("Polling {} stations from index {}", batchSize, start);
-        Flux.range(0, batchSize)
+        return Flux.range(0, batchSize)
                 .map(i -> stations.get((start + i) % stations.size()))
                 .map(StationRepository.StationDTO::id)
                 .flatMap(
@@ -62,8 +67,7 @@ public class StationPollingService {
                                                     return Mono.empty();
                                                 }),
                         10)
-                .then()
-                .subscribe(_ -> {}, error -> log.error("Polling batch of stations failed", error));
+                .then();
     }
 
     private Mono<Void> fetchAndStore(String stationID) {
