@@ -17,8 +17,10 @@ public class StationDepartureStore {
     }
 
     public @NonNull Mono<Boolean> storeDepartures(String stationID, String json) {
-        return redisTemplate
-                .opsForValue()
-                .set("station:" + stationID + ":departures", json, Duration.ofSeconds(180));
+        return redisTemplate.opsForValue().set(key(stationID), json, Duration.ofSeconds(180));
+    }
+
+    public static String key(String stationID) {
+        return "station:" + stationID + ":departures";
     }
 }
