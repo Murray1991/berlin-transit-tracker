@@ -1,17 +1,14 @@
 package dev.leonardo.bvgtransit.ingestion;
 
-import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -23,18 +20,18 @@ public class StationPollingService {
     private final List<StationRepository.StationDTO> stations;
 
     private final BvgDeparturesClient bvgDeparturesClient;
-    private final ReactiveRedisTemplate<String, String> redisTemplate;
+    private final StationDepartureStore stationDepartureStore;
 
     private final PollingProperties pollingProperties;
 
     public StationPollingService(
             StationRepository stationRepository_,
             BvgDeparturesClient bvgDeparturesClient_,
-            ReactiveRedisTemplate<String, String> redisTemplate_,
+            StationDepartureStore stationDepartureStore_,
             PollingProperties pollingProperties_) {
         stations = stationRepository_.getStations();
         bvgDeparturesClient = bvgDeparturesClient_;
-        redisTemplate = redisTemplate_;
+        stationDepartureStore = stationDepartureStore_;
         pollingProperties = pollingProperties_;
 
         if (pollingProperties.batchSize() > stations.size()) {
@@ -72,14 +69,8 @@ public class StationPollingService {
     private Mono<Void> fetchAndStore(String stationID) {
         return bvgDeparturesClient
                 .fetchDepartures(stationID)
-                .flatMap(json -> storeDepartures(stationID, json))
+                .flatMap(json -> stationDepartureStore.storeDepartures(stationID, json))
                 .then();
-    }
-
-    private @NonNull Mono<Boolean> storeDepartures(String stationID, String json) {
-        return redisTemplate
-                .opsForValue()
-                .set("station:" + stationID + ":departures", json, Duration.ofSeconds(180));
     }
 
     @ConfigurationProperties("ingestion.polling")
