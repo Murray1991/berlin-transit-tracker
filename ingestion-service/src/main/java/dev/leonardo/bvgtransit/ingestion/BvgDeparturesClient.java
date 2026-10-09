@@ -7,13 +7,14 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
 @Component
-public class BvgDeparturesClient {
+public class BvgDeparturesClient implements DeparturesClient {
     private final WebClient webClient;
 
     public BvgDeparturesClient(WebClient webClient_) {
         webClient = webClient_;
     }
 
+    @Override
     public @NonNull Mono<String> fetchDepartures(String stationID) {
         return webClient
                 .get()

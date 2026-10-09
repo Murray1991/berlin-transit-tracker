@@ -19,18 +19,18 @@ public class StationPollingService {
     private final AtomicInteger currentIndex = new AtomicInteger(0);
     private final List<StationRepository.StationDTO> stations;
 
-    private final BvgDeparturesClient bvgDeparturesClient;
+    private final DeparturesClient bvgDeparturesClient;
     private final StationDepartureStore stationDepartureStore;
 
     private final PollingProperties pollingProperties;
 
     public StationPollingService(
             StationRepository stationRepository_,
-            BvgDeparturesClient bvgDeparturesClient_,
+            DeparturesClient departuresClient_,
             StationDepartureStore stationDepartureStore_,
             PollingProperties pollingProperties_) {
         stations = stationRepository_.getStations();
-        bvgDeparturesClient = bvgDeparturesClient_;
+        bvgDeparturesClient = departuresClient_;
         stationDepartureStore = stationDepartureStore_;
         pollingProperties = pollingProperties_;
 
