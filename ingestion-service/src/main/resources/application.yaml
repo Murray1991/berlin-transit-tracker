@@ -31,5 +31,5 @@ bvg:
 logging:
   level:
     root: "info"
-    org.springframework.web: "debug"
+    org.springframework.web: "info"
     org.hibernate: "error"
