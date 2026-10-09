@@ -21,6 +21,7 @@ ingestion:
   polling:
     batch-size: 25
     interval-ms: 15000
+    max-requests-per-minute: 100
 
 bvg:
   api:

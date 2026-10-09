@@ -37,6 +37,12 @@ public class StationPollingService {
         bvgWebClient = bvgWebClient_;
         redisTemplate = redisTemplate_;
         pollingProperties = pollingProperties_;
+
+        if (pollingProperties.batchSize() > stations.size()) {
+            throw new IllegalArgumentException(
+                    "batchSize = %d greater than total number of stations = %d"
+                            .formatted(pollingProperties.batchSize(), stations.size()));
+        }
     }
 
     @Scheduled(fixedRateString = "${ingestion.polling.interval-ms}")
@@ -86,5 +92,24 @@ public class StationPollingService {
     }
 
     @ConfigurationProperties("ingestion.polling")
-    public record PollingProperties(int batchSize, int intervalMs) {}
+    public record PollingProperties(int batchSize, int intervalMs, int maxRequestsPerMinute) {
+        public PollingProperties {
+            if (batchSize <= 0) {
+                throw new IllegalArgumentException("batchSize must be greater than 0");
+            }
+            if (intervalMs <= 0) {
+                throw new IllegalArgumentException("intervalMs must be greater than 0");
+            }
+            if (maxRequestsPerMinute <= 0) {
+                throw new IllegalArgumentException("maxRequestsPerMinute must be greater than 0");
+            }
+
+            double expectedRequestsPerMinute = batchSize * (60000.0 / intervalMs);
+            if (expectedRequestsPerMinute > maxRequestsPerMinute) {
+                throw new IllegalArgumentException(
+                        "%.2f expected requests per minute greater than maxRequestsPerMinute = %d"
+                                .formatted(expectedRequestsPerMinute, maxRequestsPerMinute));
+            }
+        }
+    }
 }
