@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.HashSet;
 import java.util.Set;
 
 @Entity
@@ -26,5 +27,9 @@ public class Route {
     private String departureTime;
 
     @ManyToMany(mappedBy = "savedRoutes")
-    private Set<User> users;
+    private Set<User> users = new HashSet<>();
+
+    public void addUser(User user) {
+        users.add(user);
+    }
 }

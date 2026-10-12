@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.HashSet;
 import java.util.Set;
 
 @Entity
@@ -26,5 +27,9 @@ public class User {
             name = "user_routes",
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "route_id"))
-    private Set<Route> savedRoutes;
+    private Set<Route> savedRoutes = new HashSet<>();
+
+    public void addRoute(Route newRoute) {
+        savedRoutes.add(newRoute);
+    }
 }
