@@ -1,4 +1,4 @@
-package dev.leonardo.bvgtransit.commute;
+package dev.leonardo.bvgtransit.commute.dto;
 
 public class RouteDto {
     public record Request(String startStation, String endStation, String departureTime) {}
