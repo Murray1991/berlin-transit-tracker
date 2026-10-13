@@ -1,4 +1,4 @@
-package dev.leonardo.bvgtransit.commute;
+package dev.leonardo.bvgtransit.commute.service;
 
 import dev.leonardo.bvgtransit.commute.dto.RouteDto;
 import dev.leonardo.bvgtransit.commute.model.Route;
