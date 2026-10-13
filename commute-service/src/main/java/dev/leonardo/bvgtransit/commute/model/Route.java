@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalTime;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -24,7 +25,7 @@ public class Route {
     @JoinColumn(name = "end_station_id")
     private Station endStation;
 
-    private String departureTime;
+    private LocalTime departureTime;
 
     @ManyToMany(mappedBy = "savedRoutes")
     private Set<User> users = new HashSet<>();

@@ -48,8 +48,9 @@ public class RouteService {
                     HttpStatus.BAD_REQUEST, "Start and end stations must be different");
         }
 
+        LocalTime departureTime;
         try {
-            LocalTime.parse(request.departureTime());
+            departureTime = LocalTime.parse(request.departureTime());
         } catch (DateTimeParseException e) {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST, "Invalid departure time. Must be in the format HH:MM");
@@ -80,7 +81,7 @@ public class RouteService {
         Route route = new Route();
         route.setStartStation(startStation);
         route.setEndStation(endStation);
-        route.setDepartureTime(request.departureTime());
+        route.setDepartureTime(departureTime);
         route.addUser(user);
         user.addRoute(route);
 
@@ -89,6 +90,6 @@ public class RouteService {
                 saved.getId(),
                 saved.getStartStation().getId(),
                 saved.getEndStation().getId(),
-                saved.getDepartureTime());
+                saved.getDepartureTime().toString());
     }
 }
