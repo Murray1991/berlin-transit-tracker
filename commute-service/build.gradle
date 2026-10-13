@@ -31,6 +31,11 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-data-redis-test'
     testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+    // for jpa integration tests
+    testImplementation 'org.testcontainers:testcontainers-postgresql:2.0.5'
+    testImplementation "org.testcontainers:testcontainers-junit-jupiter:2.0.5"
+    testImplementation 'org.springframework.boot:spring-boot-testcontainers'
 }
 
 tasks.named('test') {
