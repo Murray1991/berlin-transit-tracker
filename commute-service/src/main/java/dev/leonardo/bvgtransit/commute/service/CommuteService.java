@@ -29,7 +29,7 @@ public class CommuteService {
     }
 
     @Scheduled(cron = "0 * * * * *")
-    private void pollLiveStations() {
+    public void pollLiveStations() {
         List<Route> nextRoutes = routeService.getNextRoutes();
         if (nextRoutes.isEmpty()) {
             return;
