@@ -3,6 +3,8 @@ package dev.leonardo.bvgtransit.commute;
 import static org.junit.jupiter.api.Assertions.*;
 
 import dev.leonardo.bvgtransit.commute.dto.RouteDto;
+import dev.leonardo.bvgtransit.commute.model.Route;
+import dev.leonardo.bvgtransit.commute.model.Station;
 import dev.leonardo.bvgtransit.commute.model.User;
 import dev.leonardo.bvgtransit.commute.repository.RouteRepository;
 import dev.leonardo.bvgtransit.commute.repository.StationRepository;
@@ -26,13 +28,44 @@ class RouteServiceTest {
     @Mock private RouteRepository routes;
     @Mock private StationRepository stations;
 
-    @InjectMocks
-    private RouteService routeService;
+    @InjectMocks private RouteService routeService;
+
+    @Test
+    void acceptValidInput() {
+        var user = new User();
+
+        var station1 = new Station();
+        station1.setId("station-1");
+
+        var station2 = new Station();
+        station2.setId("station-2");
+
+        Mockito.when(users.findById(1L)).thenReturn(Optional.of(user));
+        Mockito.when(stations.findById(station1.getId())).thenReturn(Optional.of(station1));
+        Mockito.when(stations.findById(station2.getId())).thenReturn(Optional.of(station2));
+        Mockito.when(routes.save(Mockito.any(Route.class)))
+                .thenAnswer(
+                        i -> {
+                            Route route = i.getArgument(0);
+                            route.setId(42L);
+                            return route;
+                        });
+
+        var request = new RouteDto.Request(station1.getId(), station2.getId(), "08:30");
+        var response = routeService.saveRoute(1L, request);
+        assertNotNull(response);
+        assertEquals(42L, response.id());
+        assertEquals("station-1", response.startStation());
+        assertEquals("station-2", response.endStation());
+        assertEquals("08:30", response.departureTime());
+    }
 
     @Test
     void rejectSameStartAndEnd() {
         var request = new RouteDto.Request("station-1", "station-1", "08:30");
-        var error = assertThrows(ResponseStatusException.class, () -> routeService.saveRoute(1L, request));
+        var error =
+                assertThrows(
+                        ResponseStatusException.class, () -> routeService.saveRoute(1L, request));
         assertEquals(HttpStatus.BAD_REQUEST, error.getStatusCode());
         Mockito.verifyNoInteractions(users, routes, stations);
     }
@@ -40,7 +73,9 @@ class RouteServiceTest {
     @Test
     void rejectWrongDepartureTime() {
         var request = new RouteDto.Request("station-1", "station-2", "bad-time");
-        var error = assertThrows(ResponseStatusException.class, () -> routeService.saveRoute(1L, request));
+        var error =
+                assertThrows(
+                        ResponseStatusException.class, () -> routeService.saveRoute(1L, request));
         assertEquals(HttpStatus.BAD_REQUEST, error.getStatusCode());
         Mockito.verifyNoInteractions(users, routes, stations);
     }
@@ -51,7 +86,9 @@ class RouteServiceTest {
         Mockito.when(stations.findById("missing")).thenReturn(Optional.empty());
 
         var request = new RouteDto.Request("missing", "station-2", "09:45");
-        var error = assertThrows(ResponseStatusException.class, () -> routeService.saveRoute(1L, request));
+        var error =
+                assertThrows(
+                        ResponseStatusException.class, () -> routeService.saveRoute(1L, request));
         assertEquals(HttpStatus.NOT_FOUND, error.getStatusCode());
 
         Mockito.verify(routes, Mockito.never()).save(Mockito.any());
