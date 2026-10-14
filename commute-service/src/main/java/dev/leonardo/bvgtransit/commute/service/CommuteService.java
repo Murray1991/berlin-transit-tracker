@@ -17,10 +17,15 @@ public class CommuteService {
 
     private final RouteService routeService;
     private final LiveTransitService liveTransitService;
+    private final LiveAlertService liveAlertService;
 
-    public CommuteService(RouteService routeService_, LiveTransitService liveTransitService_) {
+    public CommuteService(
+            RouteService routeService_,
+            LiveTransitService liveTransitService_,
+            LiveAlertService liveAlertService_) {
         routeService = routeService_;
         liveTransitService = liveTransitService_;
+        liveAlertService = liveAlertService_;
     }
 
     @Scheduled(cron = "0 * * * * *")
@@ -45,14 +50,7 @@ public class CommuteService {
                     .filter(ltd -> ltd.plannedWhen().isAfter(route.getDepartureTime()))
                     .min(Comparator.comparing(LiveTransitDto::plannedWhen))
                     .filter(ltd -> ltd.delay() > 0)
-                    .ifPresent(
-                            ltd ->
-                                    log.info(
-                                            "Valid transit data (direction {} at {}) for route {} has a delay of {}",
-                                            ltd.direction(),
-                                            ltd.plannedWhen(),
-                                            route.getId(),
-                                            ltd.delay()));
+                    .ifPresent(ltd -> liveAlertService.sendDelayAlert(route, ltd));
         }
     }
 }
