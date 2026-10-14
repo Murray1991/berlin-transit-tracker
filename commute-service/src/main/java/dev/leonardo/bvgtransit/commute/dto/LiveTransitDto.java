@@ -14,10 +14,10 @@ public record LiveTransitDto(
         java.time.LocalTime plannedWhen,
         int delay,
         String direction,
-        String destination) {
-    public boolean includeStation(String stationId) {
-        // TODO LiveTransitDto should contain a list of stops
-        return stationId.equals(destination);
+        String destinationId) {
+
+    public boolean hasDestination(String stationId) {
+        return stationId.equals(destinationId);
     }
 
     public static LiveTransitDto fromJson(String json) {
@@ -39,6 +39,6 @@ public record LiveTransitDto(
                 plannedWhen,
                 node.get("delay").asInt(),
                 node.get("direction").asString(),
-                node.get("destination").get("id").asString());
+                node.get("destinationId").get("id").asString());
     }
 }

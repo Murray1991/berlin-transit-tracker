@@ -44,7 +44,7 @@ public class LiveTransitService {
                             LocalTime.parse(node.get("plannedWhen").asString()),
                             node.get("delay").asInt(),
                             node.get("direction").asString(),
-                            node.get("destination").get("id").asString());
+                            node.get("destinationId").get("id").asString());
             departures.add(liveTransitData);
         }
 

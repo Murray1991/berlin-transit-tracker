@@ -96,7 +96,7 @@ class LiveTransitDtoSerializationTest {
         LiveTransitDto dto = LiveTransitDto.fromJson(redisJson);
         assertNotNull(dto);
         assertEquals(0, dto.delay());
-        assertEquals("900230999", dto.destination());
+        assertEquals("900230999", dto.destinationId());
         assertEquals("S Potsdam Hauptbahnhof", dto.direction());
         assertEquals(LocalTime.parse("14:30"), dto.when());
         assertEquals(LocalTime.parse("14:30"), dto.plannedWhen());
