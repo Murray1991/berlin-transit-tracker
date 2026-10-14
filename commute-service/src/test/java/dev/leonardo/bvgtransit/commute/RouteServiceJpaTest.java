@@ -1,5 +1,7 @@
 package dev.leonardo.bvgtransit.commute;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import dev.leonardo.bvgtransit.commute.dto.RouteDto;
 import dev.leonardo.bvgtransit.commute.model.Route;
 import dev.leonardo.bvgtransit.commute.model.Station;
@@ -8,7 +10,9 @@ import dev.leonardo.bvgtransit.commute.repository.RouteRepository;
 import dev.leonardo.bvgtransit.commute.repository.StationRepository;
 import dev.leonardo.bvgtransit.commute.repository.UserRepository;
 import dev.leonardo.bvgtransit.commute.service.RouteService;
+
 import jakarta.persistence.EntityManager;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -18,7 +22,8 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.postgresql.PostgreSQLContainer;
 
-import static org.junit.jupiter.api.Assertions.*;
+import java.time.LocalTime;
+import java.util.List;
 
 @SpringBootTest
 @Testcontainers
@@ -80,5 +85,74 @@ public class RouteServiceJpaTest {
         assertEquals(stationId2, savedRoute.getEndStation().getId());
         assertEquals(1, savedUser.getSavedRoutes().size());
         assertEquals(1, savedRoute.getUsers().size());
+    }
+
+    @Test
+    @Transactional
+    public void returnsNextRoutes() {
+        User user1 = new User();
+        user1.setUsername("name1");
+        user1.setEmail("name1@email.test");
+        userRepository.save(user1);
+
+        User user2 = new User();
+        user2.setUsername("name2");
+        user2.setEmail("name2@email.test");
+        userRepository.save(user2);
+
+        String stationId1 = "some-id-1";
+        Station station1 = new Station();
+        station1.setId(stationId1);
+        station1.setName("station-1");
+        stationRepository.save(station1);
+
+        String stationId2 = "some-id-2";
+        Station station2 = new Station();
+        station2.setId(stationId2);
+        station2.setName("station-2");
+        stationRepository.save(station2);
+
+        String stationId3 = "some-id-3";
+        Station station3 = new Station();
+        station3.setId(stationId3);
+        station3.setName("station-3");
+        stationRepository.save(station3);
+
+        String stationId4 = "some-id-4";
+        Station station4 = new Station();
+        station4.setId(stationId4);
+        station4.setName("station-4");
+        stationRepository.save(station4);
+
+        LocalTime from = LocalTime.now();
+        var resp1 =
+                routeService.saveRoute(
+                        user1.getId(),
+                        new RouteDto.Request(
+                                stationId1, stationId2, from.plusMinutes(10).toString()));
+        var resp2 =
+                routeService.saveRoute(
+                        user2.getId(),
+                        new RouteDto.Request(
+                                stationId1, stationId3, from.plusMinutes(27).toString()));
+
+        var resp3 =
+                routeService.saveRoute(
+                        user1.getId(),
+                        new RouteDto.Request(
+                                stationId1, stationId4, from.plusMinutes(32).toString()));
+
+        // synchronize and detach persistence context
+        entityManager.flush();
+        entityManager.clear();
+
+        List<Route> nextRoutes = routeService.getNextRoutes();
+        assertNotNull(nextRoutes);
+        assertEquals(2, nextRoutes.size());
+        assertEquals(resp1.id(), nextRoutes.get(0).getId());
+        assertEquals(resp2.id(), nextRoutes.get(1).getId());
+
+        Route route3 = routeRepository.findById(resp3.id()).orElseThrow();
+        assertEquals(resp3.id(), route3.getId());
     }
 }
