@@ -99,11 +99,11 @@ public class RouteService {
         LocalTime from = LocalTime.now();
         LocalTime to = LocalTime.now().plusMinutes(30);
         if (from.isBefore(to)) {
-            return routeRepository.findByDepartureDateBetween(from, to);
+            return routeRepository.findByDepartureTimeBetween(from, to);
         }
 
-        List<Route> routes =  routeRepository.findByDepartureDateBetween(from, LocalTime.MAX);
-        routes.addAll(routeRepository.findByDepartureDateBetween(LocalTime.MIDNIGHT, to));
+        List<Route> routes =  routeRepository.findByDepartureTimeBetween(from, LocalTime.MAX);
+        routes.addAll(routeRepository.findByDepartureTimeBetween(LocalTime.MIDNIGHT, to));
         return routes;
     }
 }
