@@ -14,6 +14,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalTime;
 import java.time.format.DateTimeParseException;
+import java.util.List;
 
 @Service
 public class RouteService {
@@ -91,5 +92,18 @@ public class RouteService {
                 saved.getStartStation().getId(),
                 saved.getEndStation().getId(),
                 saved.getDepartureTime().toString());
+    }
+
+    @Transactional
+    public List<Route> getNextRoutes() {
+        LocalTime from = LocalTime.now();
+        LocalTime to = LocalTime.now().plusMinutes(30);
+        if (from.isBefore(to)) {
+            return routeRepository.findByDepartureDateBetween(from, to);
+        }
+
+        List<Route> routes =  routeRepository.findByDepartureDateBetween(from, LocalTime.MAX);
+        routes.addAll(routeRepository.findByDepartureDateBetween(LocalTime.MIDNIGHT, to));
+        return routes;
     }
 }
