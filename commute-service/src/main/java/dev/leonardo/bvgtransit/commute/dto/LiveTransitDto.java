@@ -22,14 +22,17 @@ public record LiveTransitDto(
 
     public static LiveTransitDto fromJson(String json) {
         ObjectMapper objectMapper = new ObjectMapper();
-        JsonNode node = objectMapper.readTree(json);
+        return fromJsonNode(objectMapper.readTree(json));
+    }
+
+    public static LiveTransitDto fromJsonNode(JsonNode node) {
         LocalTime when =
                 Date.from(Instant.parse(node.get("when").asString()))
                         .toInstant()
                         .atZone(ZoneId.systemDefault())
                         .toLocalTime();
         LocalTime plannedWhen =
-                Date.from(Instant.parse(node.get("when").asString()))
+                Date.from(Instant.parse(node.get("plannedWhen").asString()))
                         .toInstant()
                         .atZone(ZoneId.systemDefault())
                         .toLocalTime();
@@ -39,6 +42,6 @@ public record LiveTransitDto(
                 plannedWhen,
                 node.get("delay").asInt(),
                 node.get("direction").asString(),
-                node.get("destinationId").get("id").asString());
+                node.get("destination").get("id").asString());
     }
 }

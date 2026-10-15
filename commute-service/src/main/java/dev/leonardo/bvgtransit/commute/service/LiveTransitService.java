@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
-import java.time.LocalTime;
+import java.time.OffsetDateTime;
 import java.util.*;
 
 @Service
@@ -39,15 +39,7 @@ public class LiveTransitService {
         String json = redisTemplate.opsForValue().get(redisKey);
         JsonNode nodeDepartures = objectMapper.readTree(json).get("departures");
         for (JsonNode node : nodeDepartures) {
-            LiveTransitDto liveTransitData =
-                    new LiveTransitDto(
-                            node.get("tripId").asString(),
-                            LocalTime.parse(node.get("when").asString()),
-                            LocalTime.parse(node.get("plannedWhen").asString()),
-                            node.get("delay").asInt(),
-                            node.get("direction").asString(),
-                            node.get("destinationId").get("id").asString());
-            departures.add(liveTransitData);
+            departures.add(LiveTransitDto.fromJsonNode(node));
         }
 
         return departures;
