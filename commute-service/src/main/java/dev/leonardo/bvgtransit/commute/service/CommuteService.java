@@ -1,10 +1,12 @@
 package dev.leonardo.bvgtransit.commute.service;
 
+import dev.leonardo.bvgtransit.commute.dto.LiveAlertDto;
 import dev.leonardo.bvgtransit.commute.dto.LiveTransitDto;
 import dev.leonardo.bvgtransit.commute.model.Route;
 import dev.leonardo.bvgtransit.commute.model.Station;
 
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -50,7 +52,17 @@ public class CommuteService {
                     .filter(ltd -> ltd.plannedWhen().isAfter(route.getDepartureTime()))
                     .min(Comparator.comparing(LiveTransitDto::plannedWhen))
                     .filter(ltd -> ltd.delay() > 0)
-                    .ifPresent(ltd -> liveAlertService.sendDelayAlert(route, ltd));
+                    .ifPresent(
+                            ltd ->
+                                    liveAlertService.sendDelayAlert(
+                                            new LiveAlertDto(
+                                                    route.getId(),
+                                                    ltd.plannedWhen(),
+                                                    startStationId,
+                                                    stopStationId,
+                                                    ltd.destinationId(),
+                                                    ltd.direction(),
+                                                    ltd.delay())));
         }
     }
 }

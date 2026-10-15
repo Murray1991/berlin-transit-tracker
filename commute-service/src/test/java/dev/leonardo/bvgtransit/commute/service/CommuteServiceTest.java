@@ -1,5 +1,6 @@
 package dev.leonardo.bvgtransit.commute.service;
 
+import dev.leonardo.bvgtransit.commute.dto.LiveAlertDto;
 import dev.leonardo.bvgtransit.commute.dto.LiveTransitDto;
 import dev.leonardo.bvgtransit.commute.model.Route;
 import dev.leonardo.bvgtransit.commute.model.Station;
@@ -46,7 +47,16 @@ class CommuteServiceTest {
 
         commuteService.pollLiveStations();
 
-        Mockito.verify(liveAlertService, Mockito.times(1)).sendDelayAlert(route, delayedDeparture);
+        Mockito.verify(liveAlertService, Mockito.times(1))
+                .sendDelayAlert(
+                        new LiveAlertDto(
+                                route.getId(),
+                                delayedDeparture.plannedWhen(),
+                                route.getStartStation().getId(),
+                                route.getEndStation().getId(),
+                                delayedDeparture.destinationId(),
+                                delayedDeparture.direction(),
+                                delayedDeparture.delay()));
     }
 
     @Test
