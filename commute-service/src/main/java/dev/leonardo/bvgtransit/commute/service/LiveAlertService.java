@@ -1,6 +1,6 @@
 package dev.leonardo.bvgtransit.commute.service;
 
-import dev.leonardo.bvgtransit.commute.RabbitMQConfig;
+import dev.leonardo.bvgtransit.commute.config.RabbitMQConfig;
 import dev.leonardo.bvgtransit.commute.dto.LiveAlertDto;
 
 import lombok.extern.slf4j.Slf4j;

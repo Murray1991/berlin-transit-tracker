@@ -1,4 +1,4 @@
-package dev.leonardo.bvgtransit.commute;
+package dev.leonardo.bvgtransit.commute.config;
 
 import dev.leonardo.bvgtransit.commute.dto.LiveAlertDto;
 import org.springframework.amqp.core.Queue;

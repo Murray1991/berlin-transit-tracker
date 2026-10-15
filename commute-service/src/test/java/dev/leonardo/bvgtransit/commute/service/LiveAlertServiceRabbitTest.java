@@ -2,7 +2,7 @@ package dev.leonardo.bvgtransit.commute.service;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import dev.leonardo.bvgtransit.commute.RabbitMQConfig;
+import dev.leonardo.bvgtransit.commute.config.RabbitMQConfig;
 import dev.leonardo.bvgtransit.commute.dto.LiveAlertDto;
 
 import org.junit.jupiter.api.Test;
