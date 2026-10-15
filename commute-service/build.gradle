@@ -34,6 +34,7 @@ dependencies {
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
     // for jpa integration tests
+    testImplementation 'org.testcontainers:testcontainers-rabbitmq:2.0.5'
     testImplementation 'org.testcontainers:testcontainers-postgresql:2.0.5'
     testImplementation "org.testcontainers:testcontainers-junit-jupiter:2.0.5"
     testImplementation 'org.springframework.boot:spring-boot-testcontainers'
