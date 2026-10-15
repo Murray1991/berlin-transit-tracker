@@ -32,9 +32,11 @@ public class LiveTransitService {
     }
 
     private List<LiveTransitDto> getLiveDepartures(String stationId) {
+        String redisKey = "station:" + stationId + ":departures";
+
         List<LiveTransitDto> departures = new ArrayList<>();
 
-        String json = redisTemplate.opsForValue().get(stationId);
+        String json = redisTemplate.opsForValue().get(redisKey);
         JsonNode nodeDepartures = objectMapper.readTree(json).get("departures");
         for (JsonNode node : nodeDepartures) {
             LiveTransitDto liveTransitData =
