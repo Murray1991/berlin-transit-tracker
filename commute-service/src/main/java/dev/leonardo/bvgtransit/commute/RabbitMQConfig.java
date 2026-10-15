@@ -1,6 +1,8 @@
 package dev.leonardo.bvgtransit.commute;
 
 import org.springframework.amqp.core.Queue;
+import org.springframework.amqp.support.converter.JacksonJsonMessageConverter;
+import org.springframework.amqp.support.converter.MessageConverter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -11,5 +13,10 @@ public class RabbitMQConfig {
     @Bean
     public Queue liveAlertsQueue() {
         return new Queue(LIVE_ALERTS_QUEUE, true);
+    }
+
+    @Bean
+    public MessageConverter jsonMessageConverter() {
+        return new JacksonJsonMessageConverter();
     }
 }
