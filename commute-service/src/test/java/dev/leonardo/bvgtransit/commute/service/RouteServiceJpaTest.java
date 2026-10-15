@@ -1,4 +1,4 @@
-package dev.leonardo.bvgtransit.commute;
+package dev.leonardo.bvgtransit.commute.service;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -9,7 +9,6 @@ import dev.leonardo.bvgtransit.commute.model.User;
 import dev.leonardo.bvgtransit.commute.repository.RouteRepository;
 import dev.leonardo.bvgtransit.commute.repository.StationRepository;
 import dev.leonardo.bvgtransit.commute.repository.UserRepository;
-import dev.leonardo.bvgtransit.commute.service.RouteService;
 
 import jakarta.persistence.EntityManager;
 
