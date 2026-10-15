@@ -2,6 +2,12 @@ spring:
   application:
     name: commute-service
 
+  data:
+    redis:
+      host: ${SPRING_REDIS_HOST:localhost}
+      port: ${SPRING_REDIS_PORT:6379}
+      password: ${SPRING_REDIS_PASS:${REDIS_PASSWORD:}}
+
   rabbitmq:
     host: localhost
     port: 5672
