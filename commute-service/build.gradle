@@ -33,6 +33,9 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
+    developmentOnly 'org.springframework.boot:spring-boot-docker-compose'
+    developmentOnly 'org.springframework.boot:spring-boot-devtools'
+
     // for jpa integration tests
     testImplementation 'org.testcontainers:testcontainers-rabbitmq:2.0.5'
     testImplementation 'org.testcontainers:testcontainers-postgresql:2.0.5'
