@@ -7,6 +7,10 @@ import pika
 QUEUE_LIVE_ALERTS = "live-alerts"
 
 
+def handle_message(body: bytes) -> dict:
+    return json.loads(body)
+
+
 def main():
     connection = pika.BlockingConnection(
         pika.ConnectionParameters(
@@ -21,11 +25,8 @@ def main():
 
     channel.queue_declare(queue=QUEUE_LIVE_ALERTS, durable=True)
 
-    def handle_msg(body: bytes) -> dict:
-        return json.loads(body)
-
     def on_message(ch, method, properties, body):
-        msg_alert = handle_msg(body)
+        msg_alert = handle_message(body)
         print(
             f" [x] Received alert for route {msg_alert['routeId']}: {msg_alert['delay']} min of delay"
             % body
