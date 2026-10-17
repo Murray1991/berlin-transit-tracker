@@ -1,67 +1,80 @@
+import asyncio
 import json
 import os
 import sys
+from typing import Awaitable, Callable
 
-import pika
+import aio_pika
 
 QUEUE_LIVE_ALERTS = "live-alerts"
 
 
-def handle_message(body: bytes) -> dict:
-    return json.loads(body)
+class RabbitMqSettings:
+    def __init__(self, host: str, port: int, login: str, password: str):
+        self.host = host
+        self.port = int(port)
+        self.login = login
+        self.password = password
+
+    async def connect(self):
+        return await aio_pika.connect_robust(
+            host=self.host,
+            port=self.port,
+            login=self.login,
+            password=self.password,
+        )
 
 
-def on_message(ch, method, properties, body):
-    msg_alert = handle_message(body)
-    print(
-        f" [x] Received alert for route {msg_alert['routeId']}: {msg_alert['delay']} min of delay"
-        % body
+class LiveAlertsConnection:
+    def __init__(self, settings: RabbitMqSettings):
+        self.settings = settings
+        self.connection = None
+        self.channel = None
+        self.queue = None
+
+    async def __aenter__(self):
+        self.connection = await self.settings.connect()
+        self.channel = await self.connection.channel()
+
+        await self.channel.set_qos(prefetch_count=10)
+
+        self.queue = await self.channel.declare_queue(QUEUE_LIVE_ALERTS, durable=True)
+        return self.connection, self.channel, self.queue
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        await self.connection.close()
+
+
+async def consume_live_alerts(
+    settings: RabbitMqSettings, on_message: Callable[[dict], Awaitable[None]]
+):
+    async with LiveAlertsConnection(settings) as (_, _, queue):
+        async with queue.iterator() as queue_iter:
+            async for message in queue_iter:
+                async with message.process():
+                    await on_message(json.loads(message.body))
+
+
+async def main() -> None:
+
+    settings = RabbitMqSettings(
+        host=os.getenv("RABBITMQ_HOST", "localhost"),
+        port=int(os.getenv("RABBITMQ_PORT", "5672")),
+        login=os.getenv("RABBITMQ_USER", "guest"),
+        password=os.getenv("RABBITMQ_PASSWORD", "guest"),
     )
 
-
-class RabbitMQConsumer:
-    def __init__(self, connection_params: pika.ConnectionParameters):
-        self.connection = pika.BlockingConnection(connection_params)
-        self.channel = self.connection.channel()
-        self.channel.queue_declare(queue=QUEUE_LIVE_ALERTS, durable=True)
-
-    def start_consuming(self):
-        self.channel.basic_consume(
-            queue=QUEUE_LIVE_ALERTS, auto_ack=True, on_message_callback=on_message
+    async def on_message(msg_alert: dict):
+        print(
+            f" [x] Received alert for route {msg_alert['routeId']}: {msg_alert['delay']} min of delay"
         )
-        self.channel.start_consuming()
 
-    def consume(self):
-        method, properties, body = self.channel.basic_get(
-            queue=QUEUE_LIVE_ALERTS, auto_ack=True
-        )
-        if method is None:
-            return None
-        return handle_message(body)
-
-    def close(self):
-        if self.connection.is_open:
-            self.connection.close()
-
-
-def main():
-    consumer = RabbitMQConsumer(
-        pika.ConnectionParameters(
-            host=os.getenv("RABBITMQ_HOST", "localhost"),
-            credentials=pika.PlainCredentials(
-                os.getenv("RABBITMQ_USER", ""),
-                os.getenv("RABBITMQ_PASSWORD", ""),
-            ),
-        )
-    )
-
-    print(" [x] Waiting for messages. To exit press CTRL+C")
-    consumer.start_consuming()
+    await consume_live_alerts(settings, on_message)
 
 
 if __name__ == "__main__":
     try:
-        main()
+        asyncio.run(main())
     except KeyboardInterrupt:
         print("^C received, shutting down")
         sys.exit(0)
