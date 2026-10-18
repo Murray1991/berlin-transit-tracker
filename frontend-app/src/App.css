@@ -13,3 +13,66 @@
         font-size: 21px;
     }
 }
+
+.layout {
+    max-width: 1100px;
+    margin: 32px auto;
+    padding: 0 20px;
+    display: grid;
+    grid-template-columns: 1fr 1.5fr;
+    gap: 24px;
+    align-items: start;
+}
+
+.panel, .commutes {
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+}
+
+.panel form {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+}
+
+.panel input,
+.panel select {
+    width: 100%;
+    padding: 9px;
+    border: 1px solid #bbb;
+    border-radius: 4px;
+}
+
+.panel button {
+    padding: 10px 14px;
+    border: 0;
+    border-radius: 4px;
+    background: #24583e;
+    color: white;
+    cursor: pointer;
+}
+
+.panel button:disabled {
+    opacity: .5;
+    cursor: not-allowed;
+}
+
+.commute-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 0;
+    border-top: 1px solid #e5e5e5;
+}
+
+.commute-card strong {
+    font-size: 15px;
+}
+
+.commute-card p {
+    margin: 6px 0 0;
+    color: #666;
+    font-size: 14px;
+}
