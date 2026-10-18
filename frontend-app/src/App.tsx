@@ -1,6 +1,40 @@
 import './App.css'
+import * as React from "react";
+import {useState} from "react";
 
 function App() {
+    const stations = ['Alexanderplatz', 'Hermannplatz'];
+    const [from, setFrom] = useState('');
+    const [to, setTo] = useState('');
+    const [time, setTime] = useState('08:30');
+
+    var routeId: number = 0;
+    type Commute = { id: number; from: string; to: string; time: string };
+    const [commutes, setCommutes] = useState<Commute[]>(
+        () => {
+            try {
+                return JSON.parse(localStorage.getItem('routes') ?? '[]') as Commute[];
+            } catch {
+                return [];
+            }
+        }
+    );
+    const saveRoute = (event: React.SubmitEvent<HTMLFormElement>) => {
+        event.preventDefault();
+
+        if (!from || !to || from == to) {
+            return;
+        }
+
+        // TODO: send POST request to backend
+
+        const next = [{id: routeId++, from, to, time}, ...commutes];
+        setCommutes(next);
+
+        localStorage.setItem('routes', JSON.stringify(next));
+        setFrom('');
+        setTo('');
+    };
 
     return (
         <>
@@ -8,14 +42,42 @@ function App() {
                 <h1> Berlin Transit Tracker </h1>
             </header>
 
-            <section id="center">
-                <div>
-                    <h1>Your Commutes</h1>
-                    <p>
-                        No saved commutes yet
-                    </p>
-                </div>
-            </section>
+            <main className="layout">
+                <section className="panel">
+
+                    <h2>Add a commute</h2>
+
+                    <form onSubmit={saveRoute}>
+                        <label htmlFor="from">Station A</label>
+                        <select id="from" value={from} onChange={event => setFrom(event.target.value)} required>
+                            <option value="" disabled>Select a station</option>
+                            {stations.map(station => <option key={station}>{station}</option>)}
+                        </select>
+
+                        <label htmlFor="to">Station B</label>
+                        <select id="to" value={to} onChange={event => setTo(event.target.value)} required>
+                            <option value="" disabled>Select a station</option>
+                            {stations.map(station => <option key={station}>{station}</option>)}
+                        </select>
+
+                        <label htmlFor="time">Departure time</label>
+                        <input id="time" type="time" value={time} onChange={event => setTime(event.target.value)}
+                               required/>
+
+                        <button type="submit" disabled={!from || !to || from == to}>
+                            Save Route
+                        </button>
+                    </form>
+                </section>
+
+                <section className="commutes">
+                    <h2>Your commutes</h2>
+                    {commutes.length === 0 ? <p className="empty">No saved commutes yet.</p> : commutes.map(commute =>
+                        <article className="commute-card" key={commute.id}>
+                            <div><strong>{commute.from} → {commute.to}</strong><p>{commute.time}</p></div>
+                        </article>)}
+                </section>
+            </main>
         </>
     )
 }
