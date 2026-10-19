@@ -31,6 +31,7 @@ class TestRabbitmq(unittest.IsolatedAsyncioTestCase):
                 "directionId": "direction-id",
                 "directionName": "Destination",
                 "delay": 1,
+                "userIds": ["aaa", "bbb", "ccc"]
             }
 
             received = asyncio.Queue()

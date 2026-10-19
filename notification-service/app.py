@@ -91,14 +91,14 @@ async def on_message(msg_alert: dict):
     print(
         f" [x] Received alert for route {msg_alert['routeId']}: {msg_alert['delay']} min of delay"
     )
-    users = msg_alert["users"]
+    user_ids = msg_alert["user_ids"]
     message = {
         "routeId": msg_alert["routeId"],
         "delay": msg_alert["delay"],
         "message": f"{msg_alert['delay']} min of delay",
     }
-    for user in users:
-        await manager.send(user, json.dumps(message).encode())
+    for user_id in user_ids:
+        await manager.send(user_id, json.dumps(message).encode())
 
 
 async def consume_live_alerts(
