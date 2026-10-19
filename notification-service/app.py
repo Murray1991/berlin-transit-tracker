@@ -1,12 +1,54 @@
 import asyncio
 import json
+import logging
 import os
 import sys
-from typing import Awaitable, Callable
+from typing import Awaitable, Callable, Dict
 
 import aio_pika
+from fastapi import FastAPI, WebSocket
+from starlette.websockets import WebSocketDisconnect
 
 QUEUE_LIVE_ALERTS = "live-alerts"
+app = FastAPI()
+
+logging.basicConfig(level=logging.INFO)
+log = logging.getLogger(__name__)
+
+
+class ConnectionManager:
+    def __init__(self):
+        self.connections: Dict[str, WebSocket] = {}
+
+    async def connect(self, user_id: str, websocket: WebSocket):
+        await websocket.accept()
+        self.connections[user_id] = websocket
+
+    def disconnect(self, user_id: str):
+        if user_id in self.connections:
+            del self.connections[user_id]
+
+    async def send(self, user_id: str, message: bytes):
+        if user_id in self.connections:
+            websocket = self.connections[user_id]
+            await websocket.send_bytes(message)
+
+
+manager = ConnectionManager()
+
+
+@app.websocket("/ws/{user_id}")
+async def websocket_endpoint(websocket: WebSocket, user_id: str):
+    await manager.connect(user_id, websocket)
+    try:
+        while True:
+            # keep connection alive
+            _ = await websocket.receive_text()
+    except WebSocketDisconnect as e:
+        log.info(f"Disconnected for {user_id}: code={e.code} reason={e.reason}")
+        pass
+    finally:
+        manager.disconnect(user_id)
 
 
 class RabbitMqSettings:
@@ -45,6 +87,20 @@ class LiveAlertsConnection:
         await self.connection.close()
 
 
+async def on_message(msg_alert: dict):
+    print(
+        f" [x] Received alert for route {msg_alert['routeId']}: {msg_alert['delay']} min of delay"
+    )
+    users = msg_alert["users"]
+    message = {
+        "routeId": msg_alert["routeId"],
+        "delay": msg_alert["delay"],
+        "message": f"{msg_alert['delay']} min of delay",
+    }
+    for user in users:
+        await manager.send(user, json.dumps(message).encode())
+
+
 async def consume_live_alerts(
     settings: RabbitMqSettings, on_message: Callable[[dict], Awaitable[None]]
 ):
@@ -63,12 +119,6 @@ async def main() -> None:
         login=os.getenv("RABBITMQ_USER", "guest"),
         password=os.getenv("RABBITMQ_PASSWORD", "guest"),
     )
-
-    async def on_message(msg_alert: dict):
-        print(
-            f" [x] Received alert for route {msg_alert['routeId']}: {msg_alert['delay']} min of delay"
-        )
-
     await consume_live_alerts(settings, on_message)
 
 

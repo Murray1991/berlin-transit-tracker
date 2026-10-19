@@ -1,1 +1,4 @@
 aio-pika
+fastapi
+uvicorn[standard]
+starlette
