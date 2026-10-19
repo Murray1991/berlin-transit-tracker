@@ -2,13 +2,14 @@ import './App.css'
 import * as React from "react";
 import {useState} from "react";
 
+let routeId: number = 0;
+
 function App() {
     const stations = ['Alexanderplatz', 'Hermannplatz'];
     const [from, setFrom] = useState('');
     const [to, setTo] = useState('');
     const [time, setTime] = useState('08:30');
 
-    var routeId: number = 0;
     type Commute = { id: number; from: string; to: string; time: string };
     const [commutes, setCommutes] = useState<Commute[]>(
         () => {
@@ -35,6 +36,12 @@ function App() {
         setFrom('');
         setTo('');
     };
+
+    const deleteRoute = (id: number) => {
+        var filtered = commutes.filter((comm) => comm.id !== id);
+        setCommutes(filtered);
+        localStorage.setItem('routes', JSON.stringify(filtered));
+    }
 
     return (
         <>
@@ -75,6 +82,7 @@ function App() {
                     {commutes.length === 0 ? <p className="empty">No saved commutes yet.</p> : commutes.map(commute =>
                         <article className="commute-card" key={commute.id}>
                             <div><strong>{commute.from} → {commute.to}</strong><p>{commute.time}</p></div>
+                            <button className="delete-button" onClick={() => deleteRoute(commute.id)}>Delete</button>
                         </article>)}
                 </section>
             </main>

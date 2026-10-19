@@ -76,3 +76,10 @@
     color: #666;
     font-size: 14px;
 }
+
+.delete-button {
+    padding: 7px 11px;
+    background: #a33;
+    border: 0;
+    cursor: pointer;
+}
