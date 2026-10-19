@@ -56,7 +56,8 @@ class CommuteServiceTest {
                                 route.getEndStation().getId(),
                                 delayedDeparture.destinationId(),
                                 delayedDeparture.direction(),
-                                delayedDeparture.delay()));
+                                delayedDeparture.delay(),
+                                route.getUsers().stream().map(User::getPublicId).toList()));
     }
 
     @Test

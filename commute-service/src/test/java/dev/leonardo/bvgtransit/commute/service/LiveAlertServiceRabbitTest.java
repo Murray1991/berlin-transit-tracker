@@ -16,6 +16,8 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
 import org.testcontainers.rabbitmq.RabbitMQContainer;
 
 import java.time.LocalTime;
+import java.util.List;
+import java.util.UUID;
 
 @SpringBootTest
 @Testcontainers
@@ -41,7 +43,8 @@ class LiveAlertServiceRabbitTest {
                         "station-id-2",
                         "station-dir-id",
                         "Station Direction",
-                        25);
+                        25,
+                        List.of(UUID.randomUUID(), UUID.randomUUID()));
         liveAlertService.sendDelayAlert(alert);
         var received = rabbitTemplate.receiveAndConvert(RabbitMQConfig.LIVE_ALERTS_QUEUE, 5000);
         assertEquals(alert, received);

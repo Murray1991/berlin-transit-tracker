@@ -5,6 +5,7 @@ import dev.leonardo.bvgtransit.commute.dto.LiveTransitDto;
 import dev.leonardo.bvgtransit.commute.model.Route;
 import dev.leonardo.bvgtransit.commute.model.Station;
 
+import dev.leonardo.bvgtransit.commute.model.User;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.scheduling.annotation.Scheduled;
@@ -62,7 +63,10 @@ public class CommuteService {
                                                     stopStationId,
                                                     ltd.destinationId(),
                                                     ltd.direction(),
-                                                    ltd.delay())));
+                                                    ltd.delay(),
+                                                    route.getUsers().stream()
+                                                            .map(User::getPublicId)
+                                                            .toList())));
         }
     }
 }

@@ -1,6 +1,8 @@
 package dev.leonardo.bvgtransit.commute.dto;
 
 import java.time.LocalTime;
+import java.util.List;
+import java.util.UUID;
 
 public record LiveAlertDto(
         Long routeId,
@@ -9,4 +11,5 @@ public record LiveAlertDto(
         String toId,
         String directionId,
         String directionName,
-        int delay) {}
+        int delay,
+        List<UUID> userIds) {}
