@@ -1,14 +1,37 @@
 import './App.css'
 import * as React from "react";
-import {useState} from "react";
+import {useEffect, useState} from "react";
 
 let routeId: number = 0;
+
+const userId = (() => {
+    let id = localStorage.getItem('user-id');
+    if (!id) {
+        id = crypto.randomUUID();
+        localStorage.setItem('user-id', id);
+    }
+    return id;
+})();
 
 function App() {
     const stations = ['Alexanderplatz', 'Hermannplatz'];
     const [from, setFrom] = useState('');
     const [to, setTo] = useState('');
     const [time, setTime] = useState('08:30');
+    const [alerts, setAlerts] = useState<string[]>([]);
+    const [connected, setConnected] = useState(false);
+
+    useEffect(() => {
+        const url = new URL(`ws://localhost:8000/ws/${userId}`);
+        const ws = new WebSocket(url);
+        ws.onopen = () => setConnected(true);
+        ws.onclose = () => setConnected(false);
+        ws.onerror = () => setConnected(false);
+        ws.onmessage = (event) => {
+            setAlerts((prevAlerts) => [...prevAlerts, event.data]);
+        };
+        return () => ws.close();
+    }, []);
 
     type Commute = { id: number; from: string; to: string; time: string };
     const [commutes, setCommutes] = useState<Commute[]>(
@@ -47,6 +70,9 @@ function App() {
         <>
             <header className="topbar">
                 <h1> Berlin Transit Tracker </h1>
+                <div className="connection" aria-live="polite"><span
+                    className={connected ? 'dot connected' : 'dot'}/>WebSocket {connected ? 'connected' : 'disconnected'}
+                </div>
             </header>
 
             <main className="layout">
