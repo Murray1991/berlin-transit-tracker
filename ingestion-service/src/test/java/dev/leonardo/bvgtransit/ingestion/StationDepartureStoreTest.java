@@ -2,6 +2,7 @@ package dev.leonardo.bvgtransit.ingestion;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import dev.leonardo.bvgtransit.ingestion.departures.BvgDeparturesStore;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;

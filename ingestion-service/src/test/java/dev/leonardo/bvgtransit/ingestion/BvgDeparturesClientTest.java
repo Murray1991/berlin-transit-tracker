@@ -2,6 +2,7 @@ package dev.leonardo.bvgtransit.ingestion;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import dev.leonardo.bvgtransit.ingestion.departures.BvgDeparturesClient;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import okhttp3.mockwebserver.RecordedRequest;

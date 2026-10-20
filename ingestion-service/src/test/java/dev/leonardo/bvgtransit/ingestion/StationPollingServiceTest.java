@@ -2,6 +2,8 @@ package dev.leonardo.bvgtransit.ingestion;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import dev.leonardo.bvgtransit.ingestion.departures.DeparturesClient;
+import dev.leonardo.bvgtransit.ingestion.departures.StationDepartureStore;
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.io.ClassPathResource;

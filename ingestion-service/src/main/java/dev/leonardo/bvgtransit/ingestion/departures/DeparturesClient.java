@@ -1,4 +1,4 @@
-package dev.leonardo.bvgtransit.ingestion;
+package dev.leonardo.bvgtransit.ingestion.departures;
 
 import org.jspecify.annotations.NonNull;
 import reactor.core.publisher.Mono;
