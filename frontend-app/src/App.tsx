@@ -111,6 +111,17 @@ function App() {
                             <button className="delete-button" onClick={() => deleteRoute(commute.id)}>Delete</button>
                         </article>)}
                 </section>
+
+                <section className="alerts" aria-live="polite">
+                    <h2>Live alerts</h2>
+                    {alerts.length == 0 ? <p className="empty">No alerts yet</p> : (
+                        <ul>
+                            {alerts.map((alert, index) => (
+                                <li key={index}>{alert}</li>
+                            ))}
+                        </ul>
+                    )}
+                </section>
             </main>
         </>
     )
