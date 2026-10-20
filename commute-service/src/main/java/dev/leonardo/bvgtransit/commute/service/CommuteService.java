@@ -52,7 +52,6 @@ public class CommuteService {
                     .filter(ltd -> ltd.hasDestination(stopStationId))
                     .filter(ltd -> ltd.plannedWhen().isAfter(route.getDepartureTime()))
                     .min(Comparator.comparing(LiveTransitDto::plannedWhen))
-                    .filter(ltd -> ltd.delay() > 0)
                     .ifPresent(
                             ltd ->
                                     liveAlertService.sendDelayAlert(
