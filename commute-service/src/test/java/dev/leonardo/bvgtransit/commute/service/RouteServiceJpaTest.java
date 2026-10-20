@@ -63,7 +63,7 @@ public class RouteServiceJpaTest {
         String departureTime = "08:30";
         var response =
                 routeService.saveRoute(
-                        user.getId(),
+                        user.getPublicId(),
                         new RouteDto.Request(station1.getId(), station2.getId(), departureTime));
 
         // check response
@@ -126,18 +126,18 @@ public class RouteServiceJpaTest {
         LocalTime from = LocalTime.now();
         var resp1 =
                 routeService.saveRoute(
-                        user1.getId(),
+                        user1.getPublicId(),
                         new RouteDto.Request(
                                 stationId1, stationId2, from.plusMinutes(10).toString()));
         var resp2 =
                 routeService.saveRoute(
-                        user2.getId(),
+                        user2.getPublicId(),
                         new RouteDto.Request(
                                 stationId1, stationId3, from.plusMinutes(27).toString()));
 
         var resp3 =
                 routeService.saveRoute(
-                        user1.getId(),
+                        user1.getPublicId(),
                         new RouteDto.Request(
                                 stationId1, stationId4, from.plusMinutes(32).toString()));
 
