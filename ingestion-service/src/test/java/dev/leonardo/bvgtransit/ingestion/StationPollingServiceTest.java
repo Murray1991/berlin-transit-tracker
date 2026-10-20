@@ -3,7 +3,7 @@ package dev.leonardo.bvgtransit.ingestion;
 import static org.junit.jupiter.api.Assertions.*;
 
 import dev.leonardo.bvgtransit.ingestion.departures.DeparturesClient;
-import dev.leonardo.bvgtransit.ingestion.departures.StationDepartureStore;
+import dev.leonardo.bvgtransit.ingestion.departures.DeparturesStore;
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.io.ClassPathResource;
@@ -56,7 +56,7 @@ class StationPollingServiceTest {
     void pollNextBatchTest() throws IOException {
         int batchSize = 10;
         FakeDeparturesClient departuresClient = new FakeDeparturesClient();
-        FakeStationDepartureStore stationDepartureStore = new FakeStationDepartureStore();
+        FakeDeparturesStore stationDepartureStore = new FakeDeparturesStore();
 
         var service =
                 new StationPollingService(
@@ -89,7 +89,7 @@ class StationPollingServiceTest {
         }
     }
 
-    private static class FakeStationDepartureStore implements StationDepartureStore {
+    private static class FakeDeparturesStore implements DeparturesStore {
         final Map<String, String> saved = new HashMap<>();
 
         @Override

@@ -1,7 +1,7 @@
 package dev.leonardo.bvgtransit.ingestion;
 
 import dev.leonardo.bvgtransit.ingestion.departures.DeparturesClient;
-import dev.leonardo.bvgtransit.ingestion.departures.StationDepartureStore;
+import dev.leonardo.bvgtransit.ingestion.departures.DeparturesStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -22,18 +22,18 @@ public class StationPollingService {
     private final List<StationCatalog.StationDTO> stations;
 
     private final DeparturesClient bvgDeparturesClient;
-    private final StationDepartureStore stationDepartureStore;
+    private final DeparturesStore departuresStore;
 
     private final PollingProperties pollingProperties;
 
     public StationPollingService(
             StationCatalog stationCatalog_,
             DeparturesClient departuresClient_,
-            StationDepartureStore stationDepartureStore_,
+            DeparturesStore departuresStore_,
             PollingProperties pollingProperties_) {
         stations = stationCatalog_.getStations();
         bvgDeparturesClient = departuresClient_;
-        stationDepartureStore = stationDepartureStore_;
+        departuresStore = departuresStore_;
         pollingProperties = pollingProperties_;
 
         if (pollingProperties.batchSize() > stations.size()) {
@@ -75,7 +75,7 @@ public class StationPollingService {
     private Mono<Void> fetchAndStore(String stationID) {
         return bvgDeparturesClient
                 .fetchDepartures(stationID)
-                .flatMap(json -> stationDepartureStore.storeDepartures(stationID, json))
+                .flatMap(json -> departuresStore.storeDepartures(stationID, json))
                 .then();
     }
 

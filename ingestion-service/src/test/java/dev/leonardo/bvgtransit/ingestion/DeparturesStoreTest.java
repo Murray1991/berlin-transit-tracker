@@ -12,7 +12,7 @@ import reactor.core.publisher.Mono;
 
 import java.time.Duration;
 
-class StationDepartureStoreTest {
+class DeparturesStoreTest {
 
     @Test
     void storeDepartures() {

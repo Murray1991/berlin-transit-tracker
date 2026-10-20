@@ -9,7 +9,7 @@ import reactor.core.publisher.Mono;
 import java.time.Duration;
 
 @Component
-public class BvgDeparturesStore implements StationDepartureStore {
+public class BvgDeparturesStore implements DeparturesStore {
     private final ReactiveRedisTemplate<String, String> redisTemplate;
 
     public BvgDeparturesStore(ReactiveRedisTemplate<String, String> redisTemplate_) {
