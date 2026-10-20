@@ -19,7 +19,7 @@ public class StationPollingService {
     private static final Logger log = LoggerFactory.getLogger(StationPollingService.class);
 
     private final AtomicInteger currentIndex = new AtomicInteger(0);
-    private final List<StationRepository.StationDTO> stations;
+    private final List<StationCatalog.StationDTO> stations;
 
     private final DeparturesClient bvgDeparturesClient;
     private final StationDepartureStore stationDepartureStore;
@@ -27,11 +27,11 @@ public class StationPollingService {
     private final PollingProperties pollingProperties;
 
     public StationPollingService(
-            StationRepository stationRepository_,
+            StationCatalog stationCatalog_,
             DeparturesClient departuresClient_,
             StationDepartureStore stationDepartureStore_,
             PollingProperties pollingProperties_) {
-        stations = stationRepository_.getStations();
+        stations = stationCatalog_.getStations();
         bvgDeparturesClient = departuresClient_;
         stationDepartureStore = stationDepartureStore_;
         pollingProperties = pollingProperties_;
@@ -55,7 +55,7 @@ public class StationPollingService {
         log.debug("Polling {} stations from index {}", batchSize, start);
         return Flux.range(0, batchSize)
                 .map(i -> stations.get((start + i) % stations.size()))
-                .map(StationRepository.StationDTO::id)
+                .map(StationCatalog.StationDTO::id)
                 .flatMap(
                         stationID ->
                                 fetchAndStore(stationID)

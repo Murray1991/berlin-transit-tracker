@@ -44,7 +44,7 @@ class StationPollingServiceTest {
                 IllegalArgumentException.class,
                 () ->
                         new StationPollingService(
-                                new StationRepository(
+                                new StationCatalog(
                                         new ObjectMapper(),
                                         new ClassPathResource("data/stations.json")),
                                 null,
@@ -60,7 +60,7 @@ class StationPollingServiceTest {
 
         var service =
                 new StationPollingService(
-                        new StationRepository(
+                        new StationCatalog(
                                 new ObjectMapper(), new ClassPathResource("data/stations.json")),
                         departuresClient,
                         stationDepartureStore,

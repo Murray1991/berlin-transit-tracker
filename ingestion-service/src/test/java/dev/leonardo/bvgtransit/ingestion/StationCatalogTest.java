@@ -8,11 +8,11 @@ import java.io.IOException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class StationRepositoryTest {
+class StationCatalogTest {
 
     @Test
     void loadStationsFromClassPath() throws IOException {
-        var repository = new StationRepository(new ObjectMapper(), new ClassPathResource("data/stations.json"));
+        var repository = new StationCatalog(new ObjectMapper(), new ClassPathResource("data/stations.json"));
         assertFalse(repository.getStations().isEmpty());
         assertNotNull(repository.getStations().getFirst().id());
     }

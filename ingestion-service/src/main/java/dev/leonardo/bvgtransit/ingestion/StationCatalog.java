@@ -11,11 +11,11 @@ import java.io.IOException;
 import java.util.List;
 
 @Service
-public class StationRepository {
+public class StationCatalog {
 
     private final List<StationDTO> stations;
 
-    public StationRepository(
+    public StationCatalog(
             ObjectMapper objectMapper,
             @Value("classpath:data/stations.json") Resource stationsResource)
             throws IOException {
