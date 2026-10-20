@@ -8,7 +8,6 @@ import dev.leonardo.bvgtransit.commute.model.Station;
 import dev.leonardo.bvgtransit.commute.model.User;
 import dev.leonardo.bvgtransit.commute.repository.RouteRepository;
 import dev.leonardo.bvgtransit.commute.repository.StationRepository;
-import dev.leonardo.bvgtransit.commute.repository.UserRepository;
 
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
@@ -25,7 +24,7 @@ import java.util.UUID;
 
 @ExtendWith(MockitoExtension.class)
 class RouteServiceTest {
-    @Mock private UserRepository users;
+    @Mock private UserService userService;
     @Mock private RouteRepository routes;
     @Mock private StationRepository stations;
 
@@ -46,7 +45,6 @@ class RouteServiceTest {
         station2.setId("station-2");
 
         UUID publicId = getPublicId();
-        Mockito.when(users.findByPublicId(publicId)).thenReturn(Optional.of(user));
         Mockito.when(stations.findById(station1.getId())).thenReturn(Optional.of(station1));
         Mockito.when(stations.findById(station2.getId())).thenReturn(Optional.of(station2));
         Mockito.when(routes.save(Mockito.any(Route.class)))
@@ -59,6 +57,9 @@ class RouteServiceTest {
 
         var request = new RouteDto.Request(station1.getId(), station2.getId(), "08:30");
         var response = routeService.saveRoute(publicId, request);
+
+        Mockito.verify(userService).addRoute(Mockito.eq(publicId), Mockito.any(Route.class));
+
         assertNotNull(response);
         assertEquals(42L, response.id());
         assertEquals("station-1", response.startStation());
@@ -75,7 +76,7 @@ class RouteServiceTest {
                         ResponseStatusException.class,
                         () -> routeService.saveRoute(publicId, request));
         assertEquals(HttpStatus.BAD_REQUEST, error.getStatusCode());
-        Mockito.verifyNoInteractions(users, routes, stations);
+        Mockito.verifyNoInteractions(userService, routes, stations);
     }
 
     @Test
@@ -87,13 +88,12 @@ class RouteServiceTest {
                         ResponseStatusException.class,
                         () -> routeService.saveRoute(publicId, request));
         assertEquals(HttpStatus.BAD_REQUEST, error.getStatusCode());
-        Mockito.verifyNoInteractions(users, routes, stations);
+        Mockito.verifyNoInteractions(userService, routes, stations);
     }
 
     @Test
     void rejectUnknownDepartureTime() {
         UUID publicId = getPublicId();
-        Mockito.when(users.findByPublicId(publicId)).thenReturn(Optional.of(new User()));
         Mockito.when(stations.findById("missing")).thenReturn(Optional.empty());
 
         var request = new RouteDto.Request("missing", "station-2", "09:45");
