@@ -1,4 +1,4 @@
-package dev.leonardo.bvgtransit.ingestion;
+package dev.leonardo.bvgtransit.ingestion.station;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import org.springframework.beans.factory.annotation.Value;

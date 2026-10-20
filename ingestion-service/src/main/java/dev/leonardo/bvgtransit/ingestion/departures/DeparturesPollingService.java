@@ -1,6 +1,6 @@
 package dev.leonardo.bvgtransit.ingestion.departures;
 
-import dev.leonardo.bvgtransit.ingestion.StationCatalog;
+import dev.leonardo.bvgtransit.ingestion.station.StationCatalog;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.ConfigurationProperties;

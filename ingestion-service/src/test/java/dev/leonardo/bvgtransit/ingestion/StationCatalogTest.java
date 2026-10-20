@@ -1,5 +1,6 @@
 package dev.leonardo.bvgtransit.ingestion;
 
+import dev.leonardo.bvgtransit.ingestion.station.StationCatalog;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.io.ClassPathResource;
 import tools.jackson.databind.ObjectMapper;
