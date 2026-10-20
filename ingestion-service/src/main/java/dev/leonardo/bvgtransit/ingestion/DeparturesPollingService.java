@@ -15,8 +15,8 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Component
-public class StationPollingService {
-    private static final Logger log = LoggerFactory.getLogger(StationPollingService.class);
+public class DeparturesPollingService {
+    private static final Logger log = LoggerFactory.getLogger(DeparturesPollingService.class);
 
     private final AtomicInteger currentIndex = new AtomicInteger(0);
     private final List<StationCatalog.StationDTO> stations;
@@ -26,7 +26,7 @@ public class StationPollingService {
 
     private final PollingProperties pollingProperties;
 
-    public StationPollingService(
+    public DeparturesPollingService(
             StationCatalog stationCatalog_,
             DeparturesClient departuresClient_,
             DeparturesStore departuresStore_,

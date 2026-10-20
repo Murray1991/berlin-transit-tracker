@@ -19,23 +19,23 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-class StationPollingServiceTest {
+class DeparturesPollingServiceTest {
     @Test
     void pollingPropertiesTest() {
-        var PollingProperties = new StationPollingService.PollingProperties(20, 18000, 100);
+        var PollingProperties = new DeparturesPollingService.PollingProperties(20, 18000, 100);
         assertEquals(20, PollingProperties.batchSize());
         assertEquals(18000, PollingProperties.intervalMs());
         assertEquals(100, PollingProperties.maxRequestsPerMinute());
 
         assertThrows(
                 IllegalArgumentException.class,
-                () -> new StationPollingService.PollingProperties(0, 18000, 100));
+                () -> new DeparturesPollingService.PollingProperties(0, 18000, 100));
         assertThrows(
                 IllegalArgumentException.class,
-                () -> new StationPollingService.PollingProperties(20, 0, 100));
+                () -> new DeparturesPollingService.PollingProperties(20, 0, 100));
         assertThrows(
                 IllegalArgumentException.class,
-                () -> new StationPollingService.PollingProperties(20, 18000, 50));
+                () -> new DeparturesPollingService.PollingProperties(20, 18000, 50));
     }
 
     @Test
@@ -43,13 +43,13 @@ class StationPollingServiceTest {
         assertThrows(
                 IllegalArgumentException.class,
                 () ->
-                        new StationPollingService(
+                        new DeparturesPollingService(
                                 new StationCatalog(
                                         new ObjectMapper(),
                                         new ClassPathResource("data/stations.json")),
                                 null,
                                 null,
-                                new StationPollingService.PollingProperties(500, 60000, 1000)));
+                                new DeparturesPollingService.PollingProperties(500, 60000, 1000)));
     }
 
     @Test
@@ -59,12 +59,12 @@ class StationPollingServiceTest {
         FakeDeparturesStore stationDepartureStore = new FakeDeparturesStore();
 
         var service =
-                new StationPollingService(
+                new DeparturesPollingService(
                         new StationCatalog(
                                 new ObjectMapper(), new ClassPathResource("data/stations.json")),
                         departuresClient,
                         stationDepartureStore,
-                        new StationPollingService.PollingProperties(batchSize, 15000, 100));
+                        new DeparturesPollingService.PollingProperties(batchSize, 15000, 100));
 
         service.pollNextBatch().block(Duration.ofSeconds(2));
         List<String> requested = departuresClient.getRequested();
