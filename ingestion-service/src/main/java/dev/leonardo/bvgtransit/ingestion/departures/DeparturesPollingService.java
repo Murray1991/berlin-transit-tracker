@@ -1,7 +1,6 @@
-package dev.leonardo.bvgtransit.ingestion;
+package dev.leonardo.bvgtransit.ingestion.departures;
 
-import dev.leonardo.bvgtransit.ingestion.departures.DeparturesClient;
-import dev.leonardo.bvgtransit.ingestion.departures.DeparturesStore;
+import dev.leonardo.bvgtransit.ingestion.StationCatalog;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -49,7 +48,7 @@ public class DeparturesPollingService {
                 .subscribe(_ -> {}, error -> log.error("Polling batch of stations failed", error));
     }
 
-    protected Mono<Void> pollNextBatch() {
+    public Mono<Void> pollNextBatch() {
         int batchSize = pollingProperties.batchSize();
         int start = currentIndex.getAndUpdate(x -> (x + batchSize) % stations.size());
         log.debug("Polling {} stations from index {}", batchSize, start);

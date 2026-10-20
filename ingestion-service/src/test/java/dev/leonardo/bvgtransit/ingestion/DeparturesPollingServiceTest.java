@@ -3,6 +3,7 @@ package dev.leonardo.bvgtransit.ingestion;
 import static org.junit.jupiter.api.Assertions.*;
 
 import dev.leonardo.bvgtransit.ingestion.departures.DeparturesClient;
+import dev.leonardo.bvgtransit.ingestion.departures.DeparturesPollingService;
 import dev.leonardo.bvgtransit.ingestion.departures.DeparturesStore;
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
