@@ -7,6 +7,10 @@ spring:
   cloud:
     gateway:
       routes:
+        - id: station-service-http
+          uri: http://localhost:8081
+          predicates:
+            - Path=/api/stations/**
         - id: commute-service-http
           uri: http://localhost:8082
           predicates:
