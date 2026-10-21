@@ -59,7 +59,7 @@ function App() {
             return;
         }
 
-        const url = new URL(`ws://localhost:8080/ws/${user.uuid}`);
+        const url = new URL(`ws://${window.location.host}/ws/${user.uuid}`);
         const ws = new WebSocket(url);
         ws.onopen = () => setConnected(true);
         ws.onclose = () => setConnected(false);

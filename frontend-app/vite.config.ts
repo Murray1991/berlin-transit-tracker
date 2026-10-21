@@ -11,6 +11,10 @@ export default defineConfig({
             '/api/': {
                 target: 'http://api-gateway:8080',
                 changeOrigin: true
+            },
+            '/ws/': {
+                target: 'ws://api-gateway:8080',
+                ws: true
             }
         }
     },
