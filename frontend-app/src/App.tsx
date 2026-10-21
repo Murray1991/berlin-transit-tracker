@@ -2,8 +2,6 @@ import "./App.css";
 import * as React from "react";
 import {useEffect, useState} from "react";
 
-let routeId: number = 0;
-
 interface User {
     uuid: string;
 }
@@ -12,6 +10,16 @@ interface Station {
     id: string;
     name: string;
     companyCodes: string[];
+}
+
+interface Route {
+    startStation: string;
+    endStation: string;
+    departureTime: string;
+}
+
+interface SavedRoute extends Route {
+    id: string;
 }
 
 let userPromise: Promise<User> | undefined;
@@ -46,6 +54,26 @@ function getOrCreateUser(): Promise<User> {
     }
 
     return userPromise;
+}
+
+async function createRoute(userId: string, route: Route): Promise<SavedRoute> {
+    const query = new URLSearchParams({userId: userId});
+    const response = await fetch(`/api/routes?${query}`, {
+        method: "POST",
+        headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(route),
+    });
+
+    if (!response.ok) {
+        throw new Error(
+            `Could not create route: ${response.status} ${await response.text()}`,
+        );
+    }
+
+    return (await response.json()) as SavedRoute;
 }
 
 function fetchStations(): Promise<Station[]> {
@@ -91,38 +119,41 @@ function App() {
         return () => ws.close();
     }, [user]);
 
-    type Commute = { id: number; from: string; to: string; time: string };
-    const [commutes, setCommutes] = useState<Commute[]>(() => {
+    const [savedRoutes, setSavedRoutes] = useState<SavedRoute[]>(() => {
         try {
-            return JSON.parse(localStorage.getItem("routes") ?? "[]") as Commute[];
+            return JSON.parse(
+                localStorage.getItem("savedRoutes") ?? "[]",
+            ) as SavedRoute[];
         } catch {
             return [];
         }
     });
-    const saveRoute = (event: React.SubmitEvent<HTMLFormElement>) => {
+    const saveRoute = async (event: React.SubmitEvent<HTMLFormElement>) => {
         event.preventDefault();
 
-        if (!from || !to || from == to) {
+        if (!from || !to || from == to || !user) {
             return;
         }
 
-        // TODO: send POST request to backend
+        const route: Route = {
+            startStation: from?.id,
+            endStation: to?.id,
+            departureTime: time,
+        };
 
-        const next: Commute[] = [
-            {id: routeId++, from: from?.name, to: to?.name, time},
-            ...commutes,
-        ];
-        setCommutes(next);
+        const created: SavedRoute = await createRoute(user.uuid, route);
+        const next: SavedRoute[] = [created, ...savedRoutes];
+        setSavedRoutes(next);
 
-        localStorage.setItem("routes", JSON.stringify(next));
+        localStorage.setItem("savedRoutes", JSON.stringify(next));
         setFrom(undefined);
         setTo(undefined);
     };
 
-    const deleteRoute = (id: number) => {
-        var filtered = commutes.filter((comm) => comm.id !== id);
-        setCommutes(filtered);
-        localStorage.setItem("routes", JSON.stringify(filtered));
+    const deleteRoute = (id: string) => {
+        var filtered = savedRoutes.filter((sr) => sr.id !== id);
+        setSavedRoutes(filtered);
+        localStorage.setItem("savedRoutes", JSON.stringify(filtered));
     };
 
     return (
@@ -199,20 +230,30 @@ function App() {
 
                 <section className="commutes">
                     <h2>Your commutes</h2>
-                    {commutes.length === 0 ? (
+                    {savedRoutes.length === 0 ? (
                         <p className="empty">No saved commutes yet.</p>
                     ) : (
-                        commutes.map((commute) => (
-                            <article className="commute-card" key={commute.id}>
+                        savedRoutes.map((route) => (
+                            <article className="commute-card" key={route.id}>
                                 <div>
                                     <strong>
-                                        {commute.from} → {commute.to}
+                                        {
+                                            stations.find(
+                                                (station) => station.id === route.startStation,
+                                            )?.name
+                                        }
+                                        {" → "}
+                                        {
+                                            stations.find(
+                                                (station) => station.id === route.endStation,
+                                            )?.name
+                                        }
                                     </strong>
-                                    <p>{commute.time}</p>
+                                    <p>{route.departureTime}</p>
                                 </div>
                                 <button
                                     className="delete-button"
-                                    onClick={() => deleteRoute(commute.id)}
+                                    onClick={() => deleteRoute(route.id)}
                                 >
                                     Delete
                                 </button>
