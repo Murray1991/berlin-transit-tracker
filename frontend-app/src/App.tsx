@@ -4,14 +4,40 @@ import {useEffect, useState} from "react";
 
 let routeId: number = 0;
 
-const userId = (() => {
-    let id = localStorage.getItem('user-id');
-    if (!id) {
-        id = crypto.randomUUID();
-        localStorage.setItem('user-id', id);
+interface User {
+    uuid: string;
+}
+
+let userPromise: Promise<User> | undefined;
+
+function getOrCreateUser(): Promise<User> {
+    const savedId = localStorage.getItem("user-id");
+    if (savedId) {
+        userPromise = Promise.resolve({uuid: savedId});
     }
-    return id;
-})();
+
+    if (!userPromise) {
+        userPromise = fetch('/api/users', {
+            method: 'POST',
+            headers: {
+                Accept: 'application/json',
+            }
+        }).then(async (response) => {
+            if (!response.ok) {
+                throw new Error(`Could not create user: ${response.status}`);
+            }
+            return await response.json() as User;
+        }).then((user: User) => {
+            localStorage.setItem("user-id", user.uuid);
+            return user;
+        }).catch((error) => {
+            userPromise = undefined;
+            throw error
+        });
+    }
+
+    return userPromise;
+}
 
 function App() {
     const stations = ['Alexanderplatz', 'Hermannplatz'];
@@ -20,9 +46,20 @@ function App() {
     const [time, setTime] = useState('08:30');
     const [alerts, setAlerts] = useState<string[]>([]);
     const [connected, setConnected] = useState(false);
+    const [user, setUser] = useState<User | null>(null);
 
     useEffect(() => {
-        const url = new URL(`ws://localhost:8000/ws/${userId}`);
+        getOrCreateUser()
+            .then(setUser)
+            .catch(error => console.error('Could not create user ', error));
+    }, [])
+
+    useEffect(() => {
+        if (!user) {
+            return;
+        }
+
+        const url = new URL(`ws://localhost:8080/ws/${user.uuid}`);
         const ws = new WebSocket(url);
         ws.onopen = () => setConnected(true);
         ws.onclose = () => setConnected(false);
@@ -31,7 +68,7 @@ function App() {
             setAlerts((prevAlerts) => [...prevAlerts, event.data]);
         };
         return () => ws.close();
-    }, []);
+    }, [user]);
 
     type Commute = { id: number; from: string; to: string; time: string };
     const [commutes, setCommutes] = useState<Commute[]>(
