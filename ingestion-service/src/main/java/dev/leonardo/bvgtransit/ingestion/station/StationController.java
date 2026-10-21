@@ -17,7 +17,17 @@ public class StationController {
     }
 
     @GetMapping
-    public ResponseEntity<List<StationCatalog.StationDTO>> getStations() {
-        return ResponseEntity.ok(stationCatalog.getStations());
+    public ResponseEntity<List<StationResponseDto>> getStations() {
+        return ResponseEntity.ok(
+                stationCatalog.getStations().stream()
+                        .map(
+                                station ->
+                                        new StationResponseDto(
+                                                station.id(),
+                                                station.name(),
+                                                station.companyCodes()))
+                        .toList());
     }
+
+    public record StationResponseDto(String id, String name, List<String> companyCodes) {}
 }
