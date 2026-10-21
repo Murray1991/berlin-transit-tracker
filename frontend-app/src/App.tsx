@@ -53,8 +53,8 @@ function fetchStations(): Promise<Station[]> {
 
 function App() {
     const [stations, setStations] = useState<Station[]>([]);
-    const [from, setFrom] = useState('');
-    const [to, setTo] = useState('');
+    const [from, setFrom] = useState<Station | undefined>(undefined);
+    const [to, setTo] = useState<Station | undefined>(undefined);
     const [time, setTime] = useState('08:30');
     const [alerts, setAlerts] = useState<string[]>([]);
     const [connected, setConnected] = useState(false);
@@ -107,12 +107,15 @@ function App() {
 
         // TODO: send POST request to backend
 
-        const next = [{id: routeId++, from, to, time}, ...commutes];
+        const next: Commute[] = [
+            {id: routeId++, from: from?.name, to: to?.name, time},
+            ...commutes
+        ];
         setCommutes(next);
 
         localStorage.setItem('routes', JSON.stringify(next));
-        setFrom('');
-        setTo('');
+        setFrom(undefined);
+        setTo(undefined);
     };
 
     const deleteRoute = (id: number) => {
@@ -137,15 +140,35 @@ function App() {
 
                     <form onSubmit={saveRoute}>
                         <label htmlFor="from">Station A</label>
-                        <select id="from" value={from} onChange={event => setFrom(event.target.value)} required>
+                        <select id="from"
+                                value={from?.id ?? ''}
+                                onChange={event =>
+                                    setFrom(stations.find(station => station.id === event.target.value))
+                                }
+                                required
+                        >
                             <option value="" disabled>Select a station</option>
-                            {stations.map(station => <option key={station.id}>{station.name}</option>)}
+                            {stations.map(station =>
+                                <option key={station.id} value={station.id}>
+                                    {station.name}
+                                </option>
+                            )}
                         </select>
 
                         <label htmlFor="to">Station B</label>
-                        <select id="to" value={to} onChange={event => setTo(event.target.value)} required>
+                        <select id="to"
+                                value={to?.id ?? ''}
+                                onChange={event =>
+                                    setTo(stations.find(station => station.id === event.target.value))
+                                }
+                                required
+                        >
                             <option value="" disabled>Select a station</option>
-                            {stations.map(station => <option key={station.id}>{station.name}</option>)}
+                            {stations.map(station =>
+                                <option key={station.id} value={station.id}>
+                                    {station.name}
+                                </option>
+                            )}
                         </select>
 
                         <label htmlFor="time">Departure time</label>
