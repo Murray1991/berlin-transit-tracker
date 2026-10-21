@@ -6,6 +6,13 @@ services:
     ports:
       - "8080:8080"
 
+  frontend:
+    build:
+      context: ./frontend-app
+    container_name: frontend
+    ports:
+      - "5173:5173"
+
   ingestion-service:
     build:
       context: ./ingestion-service
