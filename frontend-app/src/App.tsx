@@ -22,6 +22,12 @@ interface SavedRoute extends Route {
     id: string;
 }
 
+interface LiveAlert {
+    routeId: string;
+    delay: number;
+    message: string;
+}
+
 let userPromise: Promise<User> | undefined;
 
 function getOrCreateUser(): Promise<User> {
@@ -87,7 +93,7 @@ function App() {
     const [from, setFrom] = useState<Station | undefined>(undefined);
     const [to, setTo] = useState<Station | undefined>(undefined);
     const [time, setTime] = useState("08:30");
-    const [alerts, setAlerts] = useState<string[]>([]);
+    const [alerts, setAlerts] = useState<LiveAlert[]>([]);
     const [connected, setConnected] = useState(false);
     const [user, setUser] = useState<User | null>(null);
 
@@ -114,7 +120,8 @@ function App() {
         ws.onclose = () => setConnected(false);
         ws.onerror = () => setConnected(false);
         ws.onmessage = (event) => {
-            setAlerts((prevAlerts) => [...prevAlerts, event.data]);
+            const alert = JSON.parse(event.data) as LiveAlert;
+            setAlerts((prevAlerts) => [alert, ...prevAlerts]);
         };
         return () => ws.close();
     }, [user]);
@@ -269,7 +276,9 @@ function App() {
                     ) : (
                         <ul>
                             {alerts.map((alert, index) => (
-                                <li key={index}>{alert}</li>
+                                <li key={index}>
+                                    Route {alert.routeId}: {alert.message}
+                                </li>
                             ))}
                         </ul>
                     )}
