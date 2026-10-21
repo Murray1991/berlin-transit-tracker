@@ -20,8 +20,8 @@ public class RouteController {
 
     @PostMapping
     public ResponseEntity<RouteDto.Response> saveRoute(
-            UUID publicUserId, @RequestBody RouteDto.Request routeDto) {
-        var response = routeService.saveRoute(publicUserId, routeDto);
+            UUID userId, @RequestBody RouteDto.Request routeDto) {
+        var response = routeService.saveRoute(userId, routeDto);
         return ResponseEntity.ok(response);
     }
 }
