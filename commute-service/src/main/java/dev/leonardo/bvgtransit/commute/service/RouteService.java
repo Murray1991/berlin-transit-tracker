@@ -64,14 +64,20 @@ public class RouteService {
                         .orElseThrow(
                                 () ->
                                         new ResponseStatusException(
-                                                HttpStatus.NOT_FOUND, "Station not found"));
+                                                HttpStatus.NOT_FOUND,
+                                                String.format(
+                                                        "Station %s not found",
+                                                        request.startStation())));
         Station endStation =
                 stationRepository
                         .findById(request.endStation())
                         .orElseThrow(
                                 () ->
                                         new ResponseStatusException(
-                                                HttpStatus.NOT_FOUND, "Station not found"));
+                                                HttpStatus.NOT_FOUND,
+                                                String.format(
+                                                        "Station %s not found",
+                                                        request.endStation())));
 
         Route route = new Route();
         route.setStartStation(startStation);
