@@ -91,7 +91,7 @@ async def on_message(msg_alert: dict):
     print(
         f" [x] Received alert for route {msg_alert['routeId']}: {msg_alert['delay']} min of delay"
     )
-    user_ids = msg_alert["user_ids"]
+    user_ids = msg_alert["userIds"]
     message = {
         "routeId": msg_alert["routeId"],
         "delay": msg_alert["delay"],
