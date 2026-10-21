@@ -8,6 +8,12 @@ interface User {
     uuid: string;
 }
 
+interface Station {
+    id: string;
+    name: string;
+    companyCodes: string[];
+}
+
 let userPromise: Promise<User> | undefined;
 
 function getOrCreateUser(): Promise<User> {
@@ -39,8 +45,14 @@ function getOrCreateUser(): Promise<User> {
     return userPromise;
 }
 
+function fetchStations(): Promise<Station[]> {
+    return fetch('/api/stations').then(async (response) => {
+        return await response.json() as Station[];
+    });
+}
+
 function App() {
-    const stations = ['Alexanderplatz', 'Hermannplatz'];
+    const [stations, setStations] = useState<Station[]>([]);
     const [from, setFrom] = useState('');
     const [to, setTo] = useState('');
     const [time, setTime] = useState('08:30');
@@ -49,10 +61,16 @@ function App() {
     const [user, setUser] = useState<User | null>(null);
 
     useEffect(() => {
+        fetchStations()
+            .then(setStations)
+            .catch(error => console.error("Could not fetch stations: ", error));
+    }, []);
+
+    useEffect(() => {
         getOrCreateUser()
             .then(setUser)
             .catch(error => console.error('Could not create user ', error));
-    }, [])
+    }, []);
 
     useEffect(() => {
         if (!user) {
@@ -121,13 +139,13 @@ function App() {
                         <label htmlFor="from">Station A</label>
                         <select id="from" value={from} onChange={event => setFrom(event.target.value)} required>
                             <option value="" disabled>Select a station</option>
-                            {stations.map(station => <option key={station}>{station}</option>)}
+                            {stations.map(station => <option key={station.id}>{station.name}</option>)}
                         </select>
 
                         <label htmlFor="to">Station B</label>
                         <select id="to" value={to} onChange={event => setTo(event.target.value)} required>
                             <option value="" disabled>Select a station</option>
-                            {stations.map(station => <option key={station}>{station}</option>)}
+                            {stations.map(station => <option key={station.id}>{station.name}</option>)}
                         </select>
 
                         <label htmlFor="time">Departure time</label>
