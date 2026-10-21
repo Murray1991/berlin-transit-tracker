@@ -6,16 +6,18 @@ spring:
     name: api-gateway
   cloud:
     gateway:
-      routes:
-        - id: station-service-http
-          uri: http://localhost:8081
-          predicates:
-            - Path=/api/stations/**
-        - id: commute-service-http
-          uri: http://localhost:8082
-          predicates:
-            - Path=/api/routes/**, /api/users/**
-        - id: notification-service-ws
-          uri: ws://localhost:5000
-          predicates:
-            - Path=/ws/**
+      server:
+        webflux:
+          routes:
+            - id: station-service-http
+              uri: http://ingestion-service:8080
+              predicates:
+                - Path=/api/stations/**
+            - id: commute-service-http
+              uri: http://commute-service:8080
+              predicates:
+                - Path=/api/routes/**, /api/users/**
+            - id: notification-service-ws
+              uri: ws://notification-service:5000
+              predicates:
+                - Path=/ws/**
