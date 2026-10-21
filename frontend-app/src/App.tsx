@@ -1,4 +1,4 @@
-import './App.css'
+import "./App.css";
 import * as React from "react";
 import {useEffect, useState} from "react";
 
@@ -23,31 +23,34 @@ function getOrCreateUser(): Promise<User> {
     }
 
     if (!userPromise) {
-        userPromise = fetch('/api/users', {
-            method: 'POST',
+        userPromise = fetch("/api/users", {
+            method: "POST",
             headers: {
-                Accept: 'application/json',
-            }
-        }).then(async (response) => {
-            if (!response.ok) {
-                throw new Error(`Could not create user: ${response.status}`);
-            }
-            return await response.json() as User;
-        }).then((user: User) => {
-            localStorage.setItem("user-id", user.uuid);
-            return user;
-        }).catch((error) => {
-            userPromise = undefined;
-            throw error
-        });
+                Accept: "application/json",
+            },
+        })
+            .then(async (response) => {
+                if (!response.ok) {
+                    throw new Error(`Could not create user: ${response.status}`);
+                }
+                return (await response.json()) as User;
+            })
+            .then((user: User) => {
+                localStorage.setItem("user-id", user.uuid);
+                return user;
+            })
+            .catch((error) => {
+                userPromise = undefined;
+                throw error;
+            });
     }
 
     return userPromise;
 }
 
 function fetchStations(): Promise<Station[]> {
-    return fetch('/api/stations').then(async (response) => {
-        return await response.json() as Station[];
+    return fetch("/api/stations").then(async (response) => {
+        return (await response.json()) as Station[];
     });
 }
 
@@ -55,7 +58,7 @@ function App() {
     const [stations, setStations] = useState<Station[]>([]);
     const [from, setFrom] = useState<Station | undefined>(undefined);
     const [to, setTo] = useState<Station | undefined>(undefined);
-    const [time, setTime] = useState('08:30');
+    const [time, setTime] = useState("08:30");
     const [alerts, setAlerts] = useState<string[]>([]);
     const [connected, setConnected] = useState(false);
     const [user, setUser] = useState<User | null>(null);
@@ -63,13 +66,13 @@ function App() {
     useEffect(() => {
         fetchStations()
             .then(setStations)
-            .catch(error => console.error("Could not fetch stations: ", error));
+            .catch((error) => console.error("Could not fetch stations: ", error));
     }, []);
 
     useEffect(() => {
         getOrCreateUser()
             .then(setUser)
-            .catch(error => console.error('Could not create user ', error));
+            .catch((error) => console.error("Could not create user ", error));
     }, []);
 
     useEffect(() => {
@@ -89,15 +92,13 @@ function App() {
     }, [user]);
 
     type Commute = { id: number; from: string; to: string; time: string };
-    const [commutes, setCommutes] = useState<Commute[]>(
-        () => {
-            try {
-                return JSON.parse(localStorage.getItem('routes') ?? '[]') as Commute[];
-            } catch {
-                return [];
-            }
+    const [commutes, setCommutes] = useState<Commute[]>(() => {
+        try {
+            return JSON.parse(localStorage.getItem("routes") ?? "[]") as Commute[];
+        } catch {
+            return [];
         }
-    );
+    });
     const saveRoute = (event: React.SubmitEvent<HTMLFormElement>) => {
         event.preventDefault();
 
@@ -109,11 +110,11 @@ function App() {
 
         const next: Commute[] = [
             {id: routeId++, from: from?.name, to: to?.name, time},
-            ...commutes
+            ...commutes,
         ];
         setCommutes(next);
 
-        localStorage.setItem('routes', JSON.stringify(next));
+        localStorage.setItem("routes", JSON.stringify(next));
         setFrom(undefined);
         setTo(undefined);
     };
@@ -121,59 +122,74 @@ function App() {
     const deleteRoute = (id: number) => {
         var filtered = commutes.filter((comm) => comm.id !== id);
         setCommutes(filtered);
-        localStorage.setItem('routes', JSON.stringify(filtered));
-    }
+        localStorage.setItem("routes", JSON.stringify(filtered));
+    };
 
     return (
         <>
             <header className="topbar">
                 <h1> Berlin Transit Tracker </h1>
-                <div className="connection" aria-live="polite"><span
-                    className={connected ? 'dot connected' : 'dot'}/>WebSocket {connected ? 'connected' : 'disconnected'}
+                <div className="connection" aria-live="polite">
+                    <span className={connected ? "dot connected" : "dot"}/>
+                    WebSocket {connected ? "connected" : "disconnected"}
                 </div>
             </header>
 
             <main className="layout">
                 <section className="panel">
-
                     <h2>Add a commute</h2>
 
                     <form onSubmit={saveRoute}>
                         <label htmlFor="from">Station A</label>
-                        <select id="from"
-                                value={from?.id ?? ''}
-                                onChange={event =>
-                                    setFrom(stations.find(station => station.id === event.target.value))
-                                }
-                                required
+                        <select
+                            id="from"
+                            value={from?.id ?? ""}
+                            onChange={(event) =>
+                                setFrom(
+                                    stations.find((station) => station.id === event.target.value),
+                                )
+                            }
+                            required
                         >
-                            <option value="" disabled>Select a station</option>
-                            {stations.map(station =>
+                            <option value="" disabled>
+                                Select a station
+                            </option>
+                            {stations.map((station) => (
                                 <option key={station.id} value={station.id}>
                                     {station.name}
                                 </option>
-                            )}
+                            ))}
                         </select>
 
                         <label htmlFor="to">Station B</label>
-                        <select id="to"
-                                value={to?.id ?? ''}
-                                onChange={event =>
-                                    setTo(stations.find(station => station.id === event.target.value))
-                                }
-                                required
+                        <select
+                            id="to"
+                            value={to?.id ?? ""}
+                            onChange={(event) =>
+                                setTo(
+                                    stations.find((station) => station.id === event.target.value),
+                                )
+                            }
+                            required
                         >
-                            <option value="" disabled>Select a station</option>
-                            {stations.map(station =>
+                            <option value="" disabled>
+                                Select a station
+                            </option>
+                            {stations.map((station) => (
                                 <option key={station.id} value={station.id}>
                                     {station.name}
                                 </option>
-                            )}
+                            ))}
                         </select>
 
                         <label htmlFor="time">Departure time</label>
-                        <input id="time" type="time" value={time} onChange={event => setTime(event.target.value)}
-                               required/>
+                        <input
+                            id="time"
+                            type="time"
+                            value={time}
+                            onChange={(event) => setTime(event.target.value)}
+                            required
+                        />
 
                         <button type="submit" disabled={!from || !to || from == to}>
                             Save Route
@@ -183,16 +199,33 @@ function App() {
 
                 <section className="commutes">
                     <h2>Your commutes</h2>
-                    {commutes.length === 0 ? <p className="empty">No saved commutes yet.</p> : commutes.map(commute =>
-                        <article className="commute-card" key={commute.id}>
-                            <div><strong>{commute.from} → {commute.to}</strong><p>{commute.time}</p></div>
-                            <button className="delete-button" onClick={() => deleteRoute(commute.id)}>Delete</button>
-                        </article>)}
+                    {commutes.length === 0 ? (
+                        <p className="empty">No saved commutes yet.</p>
+                    ) : (
+                        commutes.map((commute) => (
+                            <article className="commute-card" key={commute.id}>
+                                <div>
+                                    <strong>
+                                        {commute.from} → {commute.to}
+                                    </strong>
+                                    <p>{commute.time}</p>
+                                </div>
+                                <button
+                                    className="delete-button"
+                                    onClick={() => deleteRoute(commute.id)}
+                                >
+                                    Delete
+                                </button>
+                            </article>
+                        ))
+                    )}
                 </section>
 
                 <section className="alerts" aria-live="polite">
                     <h2>Live alerts</h2>
-                    {alerts.length == 0 ? <p className="empty">No alerts yet</p> : (
+                    {alerts.length == 0 ? (
+                        <p className="empty">No alerts yet</p>
+                    ) : (
                         <ul>
                             {alerts.map((alert, index) => (
                                 <li key={index}>{alert}</li>
@@ -202,7 +235,7 @@ function App() {
                 </section>
             </main>
         </>
-    )
+    );
 }
 
-export default App
+export default App;
