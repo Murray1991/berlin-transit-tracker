@@ -34,6 +34,7 @@ services:
       context: ./commute-service
     container_name: commute-service
     environment:
+      STATION_CATALOG_BASE_URL: http://ingestion-service:8080
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/${POSTGRES_DB}
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}

@@ -26,3 +26,7 @@ spring:
     port: 5672
     username: ${RABBITMQ_USER}
     password: ${RABBITMQ_PASSWORD}
+
+commute:
+  station-catalog:
+    base-url: ${STATION_CATALOG_BASE_URL:http://localhost:8081}
