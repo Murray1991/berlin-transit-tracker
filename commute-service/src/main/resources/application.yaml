@@ -2,6 +2,10 @@ spring:
   application:
     name: commute-service
 
+  jpa:
+    hibernate:
+      ddl-auto: update
+
   docker:
     compose:
       file: ../docker-compose.yml
