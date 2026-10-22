@@ -3,6 +3,8 @@ package dev.leonardo.bvgtransit.ingestion.trips;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import org.jspecify.annotations.NonNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -18,6 +20,7 @@ import java.util.Map;
 @Component
 public class TripsPollingService {
 
+    private static final Logger log = LoggerFactory.getLogger(TripsPollingService.class);
     private final TripsClient tripsClient;
     private final TripsStore tripsStore;
     private final ObjectMapper objectMapper;
@@ -31,7 +34,10 @@ public class TripsPollingService {
 
     @Scheduled(fixedRate = 90000)
     public void pollTrips() {
-        pollNextTrips().then();
+        log.debug("Polling trips");
+        pollNextTrips()
+                .then()
+                .subscribe(_ -> {}, error -> log.error("Storing trips failed", error));
     }
 
     public @NonNull Flux<Boolean> pollNextTrips() {
@@ -48,6 +54,7 @@ public class TripsPollingService {
     }
 
     private Mono<Boolean> storeTrip(TripDto tripDto) {
+        log.debug("Storing trip {} {}", tripDto.id, tripDto);
         return tripsStore.storeTrip(tripDto.id, objectMapper.writeValueAsString(tripDto));
     }
 
