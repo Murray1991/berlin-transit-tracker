@@ -2,6 +2,7 @@ package dev.leonardo.bvgtransit.ingestion.trips;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import org.jspecify.annotations.NonNull;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -30,12 +31,15 @@ public class TripsPollingService {
 
     @Scheduled(fixedRate = 90000)
     public void pollTrips() {
-        tripsClient
+        pollNextTrips().then();
+    }
+
+    public @NonNull Flux<Boolean> pollNextTrips() {
+        return tripsClient
                 .fetchTrips()
                 .flatMap(json -> Mono.just(parseTrips(json)))
                 .flatMapMany(Flux::fromIterable)
-                .flatMap(this::storeTrip)
-                .then();
+                .flatMap(this::storeTrip);
     }
 
     private List<TripDto> parseTrips(String json) {
@@ -48,7 +52,10 @@ public class TripsPollingService {
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public record TripDto(String id, List<StopDto> stopovers) {}
+    public record TripDto(String id, List<StopOverDto> stopovers) {}
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public record StopOverDto(StopDto stop) {}
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     private record StopDto(String id, String name) {}
