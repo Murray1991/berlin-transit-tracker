@@ -18,7 +18,10 @@ public class BvgClientConfig {
                         .port(properties.port())
                         .build()
                         .toUriString();
-        return WebClient.builder().baseUrl(bvgBaseURL).build();
+        return WebClient.builder()
+                .baseUrl(bvgBaseURL)
+                .codecs(codecs -> codecs.defaultCodecs().maxInMemorySize(2 * 1024 * 1024))
+                .build();
     }
 
     @ConfigurationProperties(prefix = "bvg.api")
