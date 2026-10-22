@@ -1,10 +1,10 @@
 package dev.leonardo.bvgtransit.ingestion.departures;
 
+import dev.leonardo.bvgtransit.ingestion.config.PollingProperties;
 import dev.leonardo.bvgtransit.ingestion.station.StationCatalog;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -77,39 +77,5 @@ public class DeparturesPollingService {
                 .fetchDepartures(stationID)
                 .flatMap(json -> departuresStore.storeDepartures(stationID, json))
                 .then();
-    }
-
-    @ConfigurationProperties("ingestion.polling")
-    public record PollingProperties(
-            int batchSize, int intervalMs, int maxRequestsPerMinute, int maxTripDetailsPerPoll) {
-
-        public PollingProperties {
-            if (batchSize <= 0) {
-                throw new IllegalArgumentException("batchSize must be greater than 0");
-            }
-            if (intervalMs <= 0) {
-                throw new IllegalArgumentException("intervalMs must be greater than 0");
-            }
-            if (maxRequestsPerMinute <= 0) {
-                throw new IllegalArgumentException("maxRequestsPerMinute must be greater than 0");
-            }
-            if (maxTripDetailsPerPoll < -1) {
-                throw new IllegalArgumentException("maxTripDetailsPerPoll must not be negative");
-            }
-
-            double departureRequestsPerMinute = batchSize * (60000.0 / intervalMs);
-            double expectedRequestsPerMinute =
-                    departureRequestsPerMinute + maxTripDetailsPerPoll + 1;
-
-            if (expectedRequestsPerMinute > maxRequestsPerMinute) {
-                throw new IllegalArgumentException(
-                        "%.2f expected requests per minute greater than maxRequestsPerMinute = %d"
-                                .formatted(expectedRequestsPerMinute, maxRequestsPerMinute));
-            }
-        }
-
-        public PollingProperties(int batchSize, int intervalMs, int maxRequestsPerMinute) {
-            this(batchSize, intervalMs, maxRequestsPerMinute, -1);
-        }
     }
 }

@@ -2,6 +2,7 @@ package dev.leonardo.bvgtransit.ingestion;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import dev.leonardo.bvgtransit.ingestion.config.PollingProperties;
 import dev.leonardo.bvgtransit.ingestion.departures.DeparturesClient;
 import dev.leonardo.bvgtransit.ingestion.departures.DeparturesPollingService;
 import dev.leonardo.bvgtransit.ingestion.departures.DeparturesStore;
@@ -25,20 +26,14 @@ import java.util.Map;
 class DeparturesPollingServiceTest {
     @Test
     void pollingPropertiesTest() {
-        var PollingProperties = new DeparturesPollingService.PollingProperties(20, 18000, 100);
+        var PollingProperties = new PollingProperties(20, 18000, 100);
         assertEquals(20, PollingProperties.batchSize());
         assertEquals(18000, PollingProperties.intervalMs());
         assertEquals(100, PollingProperties.maxRequestsPerMinute());
 
-        assertThrows(
-                IllegalArgumentException.class,
-                () -> new DeparturesPollingService.PollingProperties(0, 18000, 100));
-        assertThrows(
-                IllegalArgumentException.class,
-                () -> new DeparturesPollingService.PollingProperties(20, 0, 100));
-        assertThrows(
-                IllegalArgumentException.class,
-                () -> new DeparturesPollingService.PollingProperties(20, 18000, 50));
+        assertThrows(IllegalArgumentException.class, () -> new PollingProperties(0, 18000, 100));
+        assertThrows(IllegalArgumentException.class, () -> new PollingProperties(20, 0, 100));
+        assertThrows(IllegalArgumentException.class, () -> new PollingProperties(20, 18000, 50));
     }
 
     @Test
@@ -52,7 +47,7 @@ class DeparturesPollingServiceTest {
                                         new ClassPathResource("data/stations.json")),
                                 null,
                                 null,
-                                new DeparturesPollingService.PollingProperties(500, 60000, 1000)));
+                                new PollingProperties(500, 60000, 1000)));
     }
 
     @Test
@@ -67,7 +62,7 @@ class DeparturesPollingServiceTest {
                                 new ObjectMapper(), new ClassPathResource("data/stations.json")),
                         departuresClient,
                         stationDepartureStore,
-                        new DeparturesPollingService.PollingProperties(batchSize, 15000, 100));
+                        new PollingProperties(batchSize, 15000, 100));
 
         service.pollNextBatch().block(Duration.ofSeconds(2));
         List<String> requested = departuresClient.getRequested();
