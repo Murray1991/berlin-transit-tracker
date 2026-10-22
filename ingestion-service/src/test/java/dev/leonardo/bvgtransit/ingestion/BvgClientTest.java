@@ -2,7 +2,8 @@ package dev.leonardo.bvgtransit.ingestion;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import dev.leonardo.bvgtransit.ingestion.departures.BvgDeparturesClient;
+import dev.leonardo.bvgtransit.ingestion.bvg.BvgClient;
+
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import okhttp3.mockwebserver.RecordedRequest;
@@ -16,9 +17,9 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import java.io.IOException;
 import java.time.Duration;
 
-class BvgDeparturesClientTest {
+class BvgClientTest {
     private MockWebServer server;
-    private BvgDeparturesClient client;
+    private BvgClient client;
 
     @BeforeEach
     void setUp() throws IOException {
@@ -26,7 +27,7 @@ class BvgDeparturesClientTest {
         server.start();
 
         var webClient = WebClient.builder().baseUrl(server.url("/").toString()).build();
-        client = new BvgDeparturesClient(webClient);
+        client = new BvgClient(webClient);
     }
 
     @AfterEach
@@ -74,6 +75,25 @@ class BvgDeparturesClientTest {
         assertEquals("GET", request.getMethod());
         assertEquals(
                 "/stops/900000/departures?tram=false&bus=false&ferry=false&express=false&regional=false",
+                request.getPath());
+    }
+
+    @Test
+    void requestTrips() throws InterruptedException {
+        String responseBody = "{\"trips\": [] }";
+        server.enqueue(
+                new MockResponse()
+                        .setHeader("content-type", "application/json; charset=utf-8")
+                        .setBody(responseBody));
+
+        String result = client.fetchTrips().block(Duration.ofSeconds(2));
+        assertEquals(responseBody, result);
+
+        RecordedRequest request = server.takeRequest();
+        assertNotNull(request);
+        assertEquals("GET", request.getMethod());
+        assertEquals(
+                "/trips?tram=false&bus=false&ferry=false&express=false&regional=false&stopovers=true",
                 request.getPath());
     }
 }
