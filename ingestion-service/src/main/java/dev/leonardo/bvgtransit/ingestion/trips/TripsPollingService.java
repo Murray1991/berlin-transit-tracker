@@ -15,7 +15,6 @@ import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.ObjectMapper;
 
 import java.util.List;
-import java.util.Map;
 
 @Component
 public class TripsPollingService {
@@ -49,8 +48,11 @@ public class TripsPollingService {
     }
 
     private List<TripDto> parseTrips(String json) {
-        Map<String, List<TripDto>> res = objectMapper.readValue(json, new TypeReference<>() {});
-        return res.getOrDefault("trips", List.of());
+        var tripsNode = objectMapper.readTree(json).get("trips");
+        if (tripsNode == null || tripsNode.isEmpty()) {
+            return List.of();
+        }
+        return objectMapper.convertValue(tripsNode, new TypeReference<>() {});
     }
 
     private Mono<Boolean> storeTrip(TripDto tripDto) {
