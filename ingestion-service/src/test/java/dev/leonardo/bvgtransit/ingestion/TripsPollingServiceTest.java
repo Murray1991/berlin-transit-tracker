@@ -70,6 +70,20 @@ class TripsPollingServiceTest {
             return Mono.just(responseBody);
         }
 
+        @Override
+        public @NonNull Mono<String> fetchTrip(String tripID) {
+            String trip1 =
+                    "{ "
+                            + "\"stopovers\": [ "
+                            + "{ \"stop\": { \"id\": \"stop-id-1\", \"name\": \"stop-name-1\" }}, "
+                            + "{ \"stop\": { \"id\": \"stop-id-1\", \"name\": \"stop-name-2\" }} "
+                            + "], "
+                            + "\"id\": \"aaa\" "
+                            + "}";
+            trip1 = trip1.strip();
+            return Mono.just(trip1);
+        }
+
         public Map<String, String> getRequested() {
             return requested;
         }
