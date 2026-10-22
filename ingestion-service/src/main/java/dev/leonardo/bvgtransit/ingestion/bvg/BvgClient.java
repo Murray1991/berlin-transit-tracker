@@ -34,7 +34,7 @@ public class BvgClient implements DeparturesClient, TripsClient {
         return webClient
                 .get()
                 .uri(
-                        "/trips?tram=false&bus=false&ferry=false&express=false&regional=false&stopovers=true")
+                        "/trips?tram=false&bus=false&ferry=false&express=false&regional=false&stopovers=true&operatorNames=Berliner%20Verkehrsbetriebe,S-Bahn%20Berlin%20GmbH")
                 .retrieve()
                 .bodyToMono(String.class);
     }
