@@ -25,11 +25,12 @@ class DeparturesStoreTest {
 
         String id = "90000";
         String json = "{\"departures\": [], \"realtimeDataUpdatedAt\": 12345}";
+        String expectedKey = "station:90000:departures";
         Duration ttl = Duration.ofSeconds(180);
         var store = new BvgDeparturesStore(redisTemplate);
-        Mockito.when(valueOperations.set(store.key(id), json, ttl)).thenReturn(Mono.just(true));
+        Mockito.when(valueOperations.set(expectedKey, json, ttl)).thenReturn(Mono.just(true));
 
         assertEquals(true, store.storeDepartures(id, json).block());
-        Mockito.verify(valueOperations).set(store.key(id), json, ttl);
+        Mockito.verify(valueOperations).set(expectedKey, json, ttl);
     }
 }

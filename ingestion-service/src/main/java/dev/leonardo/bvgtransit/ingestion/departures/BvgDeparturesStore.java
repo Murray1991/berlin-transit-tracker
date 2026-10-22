@@ -18,11 +18,12 @@ public class BvgDeparturesStore implements DeparturesStore {
 
     @Override
     public @NonNull Mono<Boolean> storeDepartures(String stationID, String json) {
-        return redisTemplate.opsForValue().set(key(stationID), json, Duration.ofSeconds(180));
+        return redisTemplate
+                .opsForValue()
+                .set(keyForStation(stationID), json, Duration.ofSeconds(180));
     }
 
-    @Override
-    public String key(String stationID) {
+    private String keyForStation(String stationID) {
         return "station:" + stationID + ":departures";
     }
 }

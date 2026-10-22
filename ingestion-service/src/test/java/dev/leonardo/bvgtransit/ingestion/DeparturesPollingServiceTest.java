@@ -6,6 +6,7 @@ import dev.leonardo.bvgtransit.ingestion.departures.DeparturesClient;
 import dev.leonardo.bvgtransit.ingestion.departures.DeparturesPollingService;
 import dev.leonardo.bvgtransit.ingestion.departures.DeparturesStore;
 import dev.leonardo.bvgtransit.ingestion.station.StationCatalog;
+
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.io.ClassPathResource;
@@ -94,19 +95,18 @@ class DeparturesPollingServiceTest {
     private static class FakeDeparturesStore implements DeparturesStore {
         final Map<String, String> saved = new HashMap<>();
 
-        @Override
-        public String key(String stationID) {
+        private String keyForStation(String stationID) {
             return stationID;
         }
 
         @Override
         public @NonNull Mono<Boolean> storeDepartures(String stationID, String json) {
-            saved.put(key(stationID), json);
+            saved.put(keyForStation(stationID), json);
             return Mono.just(true);
         }
 
         public boolean containsKey(String stationID) {
-            return saved.containsKey(key(stationID));
+            return saved.containsKey(keyForStation(stationID));
         }
     }
 }
