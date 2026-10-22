@@ -1,4 +1,7 @@
-package dev.leonardo.bvgtransit.ingestion.departures;
+package dev.leonardo.bvgtransit.ingestion.bvg;
+
+import dev.leonardo.bvgtransit.ingestion.departures.DeparturesStore;
+import dev.leonardo.bvgtransit.ingestion.trips.TripsStore;
 
 import org.jspecify.annotations.NonNull;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
@@ -9,10 +12,10 @@ import reactor.core.publisher.Mono;
 import java.time.Duration;
 
 @Component
-public class BvgDeparturesStore implements DeparturesStore {
+public class BvgRedisStore implements DeparturesStore, TripsStore {
     private final ReactiveRedisTemplate<String, String> redisTemplate;
 
-    public BvgDeparturesStore(ReactiveRedisTemplate<String, String> redisTemplate_) {
+    public BvgRedisStore(ReactiveRedisTemplate<String, String> redisTemplate_) {
         redisTemplate = redisTemplate_;
     }
 
@@ -25,5 +28,14 @@ public class BvgDeparturesStore implements DeparturesStore {
 
     private String keyForStation(String stationID) {
         return "station:" + stationID + ":departures";
+    }
+
+    @Override
+    public @NonNull Mono<Boolean> storeTrip(String tripID, String json) {
+        return redisTemplate.opsForValue().set(keyForTrip(tripID), json, Duration.ofSeconds(180));
+    }
+
+    private String keyForTrip(String tripID) {
+        return "trip:" + tripID;
     }
 }
