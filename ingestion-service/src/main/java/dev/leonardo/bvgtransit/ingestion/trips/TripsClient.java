@@ -6,4 +6,6 @@ import reactor.core.publisher.Mono;
 
 public interface TripsClient {
     @NonNull Mono<String> fetchTrips();
+
+    @NonNull Mono<String> fetchTrip(String tripID);
 }
