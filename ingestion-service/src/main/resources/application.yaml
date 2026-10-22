@@ -19,9 +19,10 @@ spring:
 
 ingestion:
   polling:
-    batch-size: 25
+    batch-size: 20
     interval-ms: 15000
     max-requests-per-minute: 100
+    max-trip-details-per-poll: 15
 
 bvg:
   api:
