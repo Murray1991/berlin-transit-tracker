@@ -20,6 +20,15 @@ import java.util.Map;
 
 class TripsPollingServiceTest {
 
+    private String keyForTrip(String tripID) throws IllegalArgumentException {
+        String[] parts = tripID.split("\\|", -1);
+        if (parts.length != 5) {
+            throw new IllegalArgumentException(
+                    "Invalid trip ID: " + tripID + "; Expected 5 numbers got " + parts.length);
+        }
+        return String.join("|", parts[0], parts[1], parts[3]);
+    }
+
     @Test
     void pollNextTrips() {
         FakeTripsClient tripsClient = new FakeTripsClient();
@@ -37,10 +46,11 @@ class TripsPollingServiceTest {
         var requested = tripsClient.getRequested();
         assertFalse(requested.isEmpty());
         for (String tripId : requested.keySet()) {
-            assertTrue(tripsStore.containsKey(tripId));
+            var storeKey = keyForTrip(tripId);
+            assertTrue(tripsStore.containsKey(storeKey));
             assertEquals(
                     objectMapper.readTree(requested.get(tripId)),
-                    objectMapper.readTree(tripsStore.get(tripId)));
+                    objectMapper.readTree(tripsStore.get(storeKey)));
         }
     }
 
@@ -50,27 +60,34 @@ class TripsPollingServiceTest {
 
         @Override
         public @NonNull Mono<String> fetchTrips() {
+
+            String tripId1 = "1|68265|0|86|21102026";
             String trip1 =
                     "{ "
                             + "\"stopovers\": [ "
                             + "{ \"stop\": { \"id\": \"stop-id-1\", \"name\": \"stop-name-1\" }}, "
                             + "{ \"stop\": { \"id\": \"stop-id-1\", \"name\": \"stop-name-2\" }} "
                             + "], "
-                            + "\"id\": \"aaa\" "
+                            + "\"id\": \""
+                            + tripId1
+                            + "\" "
                             + "}";
             trip1 = trip1.strip();
-            requested.put("aaa", trip1);
+            requested.put(tripId1, trip1);
 
+            String tripId2 = "2|99265|0|86|21102026";
             String trip2 =
                     "{ "
                             + "\"stopovers\": [ "
                             + "{ \"stop\": { \"id\": \"stop-id-3\", \"name\": \"stop-name-3\" }}, "
                             + "{ \"stop\": { \"id\": \"stop-id-4\", \"name\": \"stop-name-3\" }} "
                             + "], "
-                            + "\"id\": \"bbb\" "
+                            + "\"id\": \""
+                            + tripId2
+                            + "\" "
                             + "}";
             trip2 = trip2.strip();
-            requested.put("bbb", trip2);
+            requested.put(tripId2, trip2);
 
             String responseBody = "{ \"trips\": [ " + trip1 + "," + trip2 + "] }";
             return Mono.just(responseBody);
@@ -78,16 +95,9 @@ class TripsPollingServiceTest {
 
         @Override
         public @NonNull Mono<String> fetchTrip(String tripID) {
-            String trip1 =
-                    "{ "
-                            + "\"stopovers\": [ "
-                            + "{ \"stop\": { \"id\": \"stop-id-1\", \"name\": \"stop-name-1\" }}, "
-                            + "{ \"stop\": { \"id\": \"stop-id-1\", \"name\": \"stop-name-2\" }} "
-                            + "], "
-                            + "\"id\": \"aaa\" "
-                            + "}";
-            trip1 = trip1.strip();
-            return Mono.just(trip1);
+            String trip = "{ \"trip\":" + requested.get(tripID) + " }";
+            trip = trip.strip();
+            return Mono.just(trip);
         }
 
         public Map<String, String> getRequested() {
