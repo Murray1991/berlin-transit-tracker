@@ -5,5 +5,7 @@ import org.jspecify.annotations.NonNull;
 import reactor.core.publisher.Mono;
 
 public interface TripsStore {
+    @NonNull Mono<Boolean> containsTrip(String tripID);
+
     @NonNull Mono<Boolean> storeTrip(String tripID, String json);
 }

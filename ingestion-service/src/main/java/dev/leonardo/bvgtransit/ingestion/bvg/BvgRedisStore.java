@@ -32,7 +32,12 @@ public class BvgRedisStore implements DeparturesStore, TripsStore {
 
     @Override
     public @NonNull Mono<Boolean> storeTrip(String tripID, String json) {
-        return redisTemplate.opsForValue().set(keyForTrip(tripID), json, Duration.ofSeconds(180));
+        return redisTemplate.opsForValue().set(keyForTrip(tripID), json, Duration.ofDays(1));
+    }
+
+    @Override
+    public @NonNull Mono<Boolean> containsTrip(String tripID) {
+        return redisTemplate.hasKey(keyForTrip(tripID));
     }
 
     private String keyForTrip(String tripID) {
