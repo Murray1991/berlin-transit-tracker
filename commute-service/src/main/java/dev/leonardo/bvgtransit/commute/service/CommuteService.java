@@ -38,7 +38,7 @@ public class CommuteService {
             return;
         }
 
-        Map<String, List<LiveTransitDto>> liveDepartures =
+        Map<String, Collection<LiveTransitDto>> liveDepartures =
                 liveTransitService.getLiveDepartures(
                         nextRoutes.stream()
                                 .map(Route::getStartStation)

@@ -7,6 +7,7 @@ import java.time.Instant;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.Date;
+import java.util.List;
 
 public record LiveTransitDto(
         String tripId,
@@ -14,7 +15,13 @@ public record LiveTransitDto(
         java.time.LocalTime plannedWhen,
         int delay,
         String direction,
-        String destinationId) {
+        String destinationId,
+        List<StopDto> stopovers) {
+
+    public LiveTransitDto withStopovers(List<StopDto> stopovers) {
+        return new LiveTransitDto(
+                tripId, when, plannedWhen, delay, direction, destinationId, stopovers);
+    }
 
     public boolean hasDestination(String stationId) {
         return stationId.equals(destinationId);
@@ -42,6 +49,7 @@ public record LiveTransitDto(
                 plannedWhen,
                 node.get("delay").asInt(),
                 node.get("direction").asString(),
-                node.get("destination").get("id").asString());
+                node.get("destination").get("id").asString(),
+                List.of());
     }
 }
