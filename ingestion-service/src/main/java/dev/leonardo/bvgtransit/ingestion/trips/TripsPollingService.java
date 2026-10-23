@@ -125,6 +125,7 @@ public class TripsPollingService {
     }
 
     private @NonNull Mono<Boolean> storeTrip(String tripKey, TripDto tripDto) {
+        log.info("Storing trip {}", tripKey);
         return tripsStore.storeTrip(tripKey, objectMapper.writeValueAsString(tripDto));
     }
 
