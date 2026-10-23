@@ -93,7 +93,7 @@ class BvgClientTest {
         assertNotNull(request);
         assertEquals("GET", request.getMethod());
         assertEquals(
-                "/trips?tram=false&bus=false&ferry=false&express=false&regional=false&stopovers=true",
+                "/trips?tram=false&bus=false&ferry=false&express=false&regional=false&stopovers=true&operatorNames=Berliner%2520Verkehrsbetriebe,S-Bahn%2520Berlin%2520GmbH",
                 request.getPath());
     }
 }
