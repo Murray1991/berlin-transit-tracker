@@ -39,7 +39,8 @@ class CommuteServiceTest {
                         time.plusMinutes(1),
                         120,
                         "Direction",
-                        route.getEndStation().getId());
+                        route.getEndStation().getId(),
+                        List.of());
 
         Mockito.when(routeService.getNextRoutes()).thenReturn(Collections.singletonList(route));
         Mockito.when(liveTransitService.getLiveDepartures(Set.of("station-1")))
@@ -71,7 +72,8 @@ class CommuteServiceTest {
                         time.plusMinutes(1),
                         0,
                         "Direction",
-                        route.getEndStation().getId());
+                        route.getEndStation().getId(),
+                        List.of());
 
         Mockito.when(routeService.getNextRoutes()).thenReturn(Collections.singletonList(route));
         Mockito.when(liveTransitService.getLiveDepartures(Set.of("station-1")))

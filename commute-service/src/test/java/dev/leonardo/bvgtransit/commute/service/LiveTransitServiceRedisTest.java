@@ -55,7 +55,7 @@ class LiveTransitServiceRedisTest {
         var departures = liveTransitService.getLiveDepartures(List.of(stationId)).get(stationId);
         assertEquals(1, departures.size());
 
-        LiveTransitDto departure = departures.getFirst();
+        LiveTransitDto departure = departures.stream().findFirst().get();
         assertEquals("trip-1", departure.tripId());
         assertEquals(LocalTime.of(8, 31), departure.when());
         assertEquals(LocalTime.of(8, 30), departure.plannedWhen());
