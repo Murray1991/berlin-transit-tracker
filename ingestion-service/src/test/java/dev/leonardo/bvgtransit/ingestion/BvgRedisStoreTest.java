@@ -47,7 +47,7 @@ class BvgRedisStoreTest {
         String id = "1|68265|0|86|21102026";
         String json = "{\"id\": \"1|68265|0|86|21102026\", \"stopovers\": []}";
         String expectedKey = "trip:1|68265|0|86|21102026";
-        Duration ttl = Duration.ofSeconds(180);
+        Duration ttl = Duration.ofDays(1);
         var store = new BvgRedisStore(redisTemplate);
         Mockito.when(valueOperations.set(expectedKey, json, ttl)).thenReturn(Mono.just(true));
 
