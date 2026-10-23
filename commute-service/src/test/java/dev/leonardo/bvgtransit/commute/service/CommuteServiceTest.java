@@ -2,6 +2,7 @@ package dev.leonardo.bvgtransit.commute.service;
 
 import dev.leonardo.bvgtransit.commute.dto.LiveAlertDto;
 import dev.leonardo.bvgtransit.commute.dto.LiveTransitDto;
+import dev.leonardo.bvgtransit.commute.dto.StopDto;
 import dev.leonardo.bvgtransit.commute.model.Route;
 import dev.leonardo.bvgtransit.commute.model.Station;
 import dev.leonardo.bvgtransit.commute.model.User;
@@ -40,7 +41,9 @@ class CommuteServiceTest {
                         120,
                         "Direction",
                         route.getEndStation().getId(),
-                        List.of());
+                        List.of(
+                                new StopDto("station-1", "statio-name-1"),
+                                new StopDto("station-2", "station-name-2")));
 
         Mockito.when(routeService.getNextRoutes()).thenReturn(Collections.singletonList(route));
         Mockito.when(liveTransitService.getLiveDepartures(Set.of("station-1")))
