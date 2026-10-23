@@ -33,11 +33,13 @@ public class CommuteService {
 
     @Scheduled(cron = "0 * * * * *")
     public void pollLiveStations() {
+        log.info("Polling live stations");
         List<Route> nextRoutes = routeService.getNextRoutes();
         if (nextRoutes.isEmpty()) {
             return;
         }
 
+        log.info("Routes available: {}", nextRoutes.size());
         Map<String, Collection<LiveTransitDto>> liveDepartures =
                 liveTransitService.getLiveDepartures(
                         nextRoutes.stream()
@@ -45,6 +47,7 @@ public class CommuteService {
                                 .map(Station::getId)
                                 .collect(Collectors.toSet()));
 
+        log.info("Live departures available: {}", liveDepartures.size());
         for (Route route : nextRoutes) {
             String startStationId = route.getStartStation().getId();
             String stopStationId = route.getEndStation().getId();
