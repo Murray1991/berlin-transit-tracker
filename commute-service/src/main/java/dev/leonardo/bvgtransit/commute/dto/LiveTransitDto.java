@@ -8,6 +8,7 @@ import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.IntStream;
 
 public record LiveTransitDto(
         String tripId,
@@ -23,8 +24,15 @@ public record LiveTransitDto(
                 tripId, when, plannedWhen, delay, direction, destinationId, stopovers);
     }
 
-    public boolean hasDestination(String stationId) {
-        return stationId.equals(destinationId);
+    public boolean hasStopAfter(String startId, String stopId) {
+        int startIndex =
+                IntStream.range(0, stopovers.size())
+                        .filter(i -> stopovers.get(i).id().equals(startId))
+                        .findFirst()
+                        .orElse(-1);
+        return startIndex >= 0
+                && stopovers.subList(startIndex, stopovers.size()).stream()
+                        .anyMatch(stop -> stop.id().equals(stopId));
     }
 
     public static LiveTransitDto fromJson(String json) {

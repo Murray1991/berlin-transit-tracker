@@ -4,8 +4,8 @@ import dev.leonardo.bvgtransit.commute.dto.LiveAlertDto;
 import dev.leonardo.bvgtransit.commute.dto.LiveTransitDto;
 import dev.leonardo.bvgtransit.commute.model.Route;
 import dev.leonardo.bvgtransit.commute.model.Station;
-
 import dev.leonardo.bvgtransit.commute.model.User;
+
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.scheduling.annotation.Scheduled;
@@ -49,7 +49,7 @@ public class CommuteService {
             String startStationId = route.getStartStation().getId();
             String stopStationId = route.getEndStation().getId();
             liveDepartures.get(startStationId).stream()
-                    .filter(ltd -> ltd.hasDestination(stopStationId))
+                    .filter(ltd -> ltd.hasStopAfter(startStationId, stopStationId))
                     .filter(ltd -> ltd.plannedWhen().isAfter(route.getDepartureTime()))
                     .min(Comparator.comparing(LiveTransitDto::plannedWhen))
                     .ifPresent(
