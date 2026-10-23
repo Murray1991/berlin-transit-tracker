@@ -34,7 +34,19 @@ public class BvgClient implements DeparturesClient, TripsClient {
         return webClient
                 .get()
                 .uri(
-                        "/trips?tram=false&bus=false&ferry=false&express=false&regional=false&stopovers=true&operatorNames=Berliner%20Verkehrsbetriebe,S-Bahn%20Berlin%20GmbH")
+                        uriBuilder ->
+                                uriBuilder
+                                        .path("/trips")
+                                        .queryParam("tram", false)
+                                        .queryParam("bus", false)
+                                        .queryParam("ferry", false)
+                                        .queryParam("express", false)
+                                        .queryParam("regional", false)
+                                        .queryParam("stopovers", true)
+                                        .queryParam(
+                                                "operatorNames",
+                                                "Berliner Verkehrsbetriebe,S-Bahn Berlin GmbH")
+                                        .build())
                 .retrieve()
                 .bodyToMono(String.class);
     }
@@ -44,9 +56,19 @@ public class BvgClient implements DeparturesClient, TripsClient {
         return webClient
                 .get()
                 .uri(
-                        "/trips/"
-                                + tripID
-                                + "?tram=false&bus=false&ferry=false&express=false&regional=false&stopovers=true&operatorNames=Berliner%20Verkehrsbetriebe,S-Bahn%20Berlin%20GmbH")
+                        uriBuilder ->
+                                uriBuilder
+                                        .path("/trips/" + tripID)
+                                        .queryParam("tram", false)
+                                        .queryParam("bus", false)
+                                        .queryParam("ferry", false)
+                                        .queryParam("express", false)
+                                        .queryParam("regional", false)
+                                        .queryParam("stopovers", true)
+                                        .queryParam(
+                                                "operatorNames",
+                                                "Berliner Verkehrsbetriebe,S-Bahn Berlin GmbH")
+                                        .build())
                 .retrieve()
                 .bodyToMono(String.class);
     }
