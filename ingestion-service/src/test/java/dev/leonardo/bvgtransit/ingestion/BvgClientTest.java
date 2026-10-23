@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import dev.leonardo.bvgtransit.ingestion.bvg.BvgClient;
 
+import okhttp3.HttpUrl;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import okhttp3.mockwebserver.RecordedRequest;
@@ -16,6 +17,8 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 
 import java.io.IOException;
 import java.time.Duration;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 class BvgClientTest {
     private MockWebServer server;
@@ -92,8 +95,20 @@ class BvgClientTest {
         RecordedRequest request = server.takeRequest();
         assertNotNull(request);
         assertEquals("GET", request.getMethod());
+
+        HttpUrl url = request.getRequestUrl();
+        assertNotNull(url);
+
         assertEquals(
-                "/trips?tram=false&bus=false&ferry=false&express=false&regional=false&stopovers=true&operatorNames=Berliner%2520Verkehrsbetriebe,S-Bahn%2520Berlin%2520GmbH",
-                request.getPath());
+                Map.of(
+                        "tram", "false",
+                        "bus", "false",
+                        "ferry", "false",
+                        "express", "false",
+                        "regional", "false",
+                        "stopovers", "true",
+                        "operatorNames", "Berliner Verkehrsbetriebe,S-Bahn Berlin GmbH"),
+                url.queryParameterNames().stream()
+                        .collect(Collectors.toMap(name -> name, url::queryParameter)));
     }
 }
