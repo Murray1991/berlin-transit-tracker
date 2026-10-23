@@ -104,8 +104,8 @@ public class TripsPollingService {
     private @NonNull Mono<Boolean> fetchAndStore(String tripKey, TripDto tripDto) {
         return tripsClient
                 .fetchTrip(tripDto.id())
-                .map(this::extractTripJson)
-                .flatMap(json -> tripsStore.storeTrip(tripKey, json))
+                .map(this::parseTrip)
+                .flatMap(trip -> storeTrip(tripKey, trip))
                 .doOnNext(
                         stored -> {
                             if (stored) {
@@ -124,12 +124,16 @@ public class TripsPollingService {
                         });
     }
 
-    private String extractTripJson(String json) {
+    private @NonNull Mono<Boolean> storeTrip(String tripKey, TripDto tripDto) {
+        return tripsStore.storeTrip(tripKey, objectMapper.writeValueAsString(tripDto));
+    }
+
+    private TripDto parseTrip(String json) {
         var tripNode = objectMapper.readTree(json).get("trip");
         if (tripNode == null || tripNode.isEmpty()) {
             throw new MissingFormatArgumentException("Missing trip");
         }
-        return objectMapper.writeValueAsString(tripNode);
+        return objectMapper.convertValue(tripNode, new TypeReference<>() {});
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
