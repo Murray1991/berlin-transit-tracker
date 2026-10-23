@@ -16,7 +16,7 @@ public record PollingProperties(
         if (maxRequestsPerMinute <= 0) {
             throw new IllegalArgumentException("maxRequestsPerMinute must be greater than 0");
         }
-        if (maxTripDetailsPerPoll < -1) {
+        if (maxTripDetailsPerPoll < 0) {
             throw new IllegalArgumentException("maxTripDetailsPerPoll must not be negative");
         }
 
@@ -28,9 +28,5 @@ public record PollingProperties(
                     "%.2f expected requests per minute greater than maxRequestsPerMinute = %d"
                             .formatted(expectedRequestsPerMinute, maxRequestsPerMinute));
         }
-    }
-
-    public PollingProperties(int batchSize, int intervalMs, int maxRequestsPerMinute) {
-        this(batchSize, intervalMs, maxRequestsPerMinute, -1);
     }
 }
