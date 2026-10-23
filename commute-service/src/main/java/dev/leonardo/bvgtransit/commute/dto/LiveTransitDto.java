@@ -1,15 +1,19 @@
 package dev.leonardo.bvgtransit.commute.dto;
 
+import lombok.extern.slf4j.Slf4j;
+
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
 import java.time.Instant;
 import java.time.LocalTime;
 import java.time.ZoneId;
+import java.time.format.DateTimeParseException;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.IntStream;
 
+@Slf4j
 public record LiveTransitDto(
         String tripId,
         java.time.LocalTime when,
@@ -41,16 +45,8 @@ public record LiveTransitDto(
     }
 
     public static LiveTransitDto fromJsonNode(JsonNode node) {
-        LocalTime when =
-                Date.from(Instant.parse(node.get("when").asString()))
-                        .toInstant()
-                        .atZone(ZoneId.systemDefault())
-                        .toLocalTime();
-        LocalTime plannedWhen =
-                Date.from(Instant.parse(node.get("plannedWhen").asString()))
-                        .toInstant()
-                        .atZone(ZoneId.systemDefault())
-                        .toLocalTime();
+        LocalTime when = parseTime(node, "when");
+        LocalTime plannedWhen = parseTime(node, "plannedWhen");
         return new LiveTransitDto(
                 node.get("tripId").asString(),
                 when,
@@ -59,5 +55,21 @@ public record LiveTransitDto(
                 node.get("direction").asString(),
                 node.get("destination").get("id").asString(),
                 List.of());
+    }
+
+    private static LocalTime parseTime(JsonNode node, String when) {
+        try {
+            return Date.from(Instant.parse(node.get(when).asString()))
+                    .toInstant()
+                    .atZone(ZoneId.systemDefault())
+                    .toLocalTime();
+        } catch (DateTimeParseException e) {
+            log.error(
+                    "Error parsing field {} in {}: {}",
+                    when,
+                    node.toPrettyString(),
+                    e.getMessage());
+            return null;
+        }
     }
 }
