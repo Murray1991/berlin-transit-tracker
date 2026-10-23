@@ -2,6 +2,7 @@ package dev.leonardo.bvgtransit.ingestion;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import dev.leonardo.bvgtransit.ingestion.config.PollingProperties;
 import dev.leonardo.bvgtransit.ingestion.trips.TripsClient;
 import dev.leonardo.bvgtransit.ingestion.trips.TripsPollingService;
 import dev.leonardo.bvgtransit.ingestion.trips.TripsStore;
@@ -25,7 +26,12 @@ class TripsPollingServiceTest {
         FakeTripsStore tripsStore = new FakeTripsStore();
 
         ObjectMapper objectMapper = new ObjectMapper();
-        var service = new TripsPollingService(tripsClient, tripsStore, objectMapper);
+        var service =
+                new TripsPollingService(
+                        tripsClient,
+                        tripsStore,
+                        objectMapper,
+                        new PollingProperties(20, 15000, 100, 15));
         service.pollNextTrips().collectList().block(Duration.ofSeconds(2));
 
         var requested = tripsClient.getRequested();
@@ -94,6 +100,11 @@ class TripsPollingServiceTest {
 
         private String keyForTrip(String tripId) {
             return "trip:".concat(tripId);
+        }
+
+        @Override
+        public @NonNull Mono<Boolean> containsTrip(String tripID) {
+            return Mono.just(saved.containsKey(keyForTrip(tripID)));
         }
 
         @Override
