@@ -28,6 +28,10 @@ public record LiveTransitDto(
                 tripId, when, plannedWhen, delay, direction, destinationId, stopovers);
     }
 
+    public boolean stopAt(String stopId) {
+        return stopovers.stream().map(StopDto::id).anyMatch(stopId::equals);
+    }
+
     public boolean hasStopAfter(String startId, String stopId) {
         int startIndex =
                 IntStream.range(0, stopovers.size())

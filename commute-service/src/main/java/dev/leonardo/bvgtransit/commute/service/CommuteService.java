@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -51,9 +52,11 @@ public class CommuteService {
         for (Route route : nextRoutes) {
             String startStationId = route.getStartStation().getId();
             String stopStationId = route.getEndStation().getId();
+            LocalTime departureTime = route.getDepartureTime();
             liveDepartures.get(startStationId).stream()
-                    .filter(ltd -> ltd.hasStopAfter(startStationId, stopStationId))
-                    .filter(ltd -> ltd.plannedWhen().isAfter(route.getDepartureTime()))
+                    .filter(ltd -> ltd.stopAt(stopStationId))
+                    .filter(ltd -> ltd.plannedWhen().isAfter(departureTime))
+                    .filter(ltd1 -> ltd1.hasStopAfter(startStationId, stopStationId))
                     .min(Comparator.comparing(LiveTransitDto::plannedWhen))
                     .ifPresent(
                             ltd ->
