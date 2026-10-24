@@ -16,6 +16,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.transaction.annotation.Transactional;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -30,6 +31,8 @@ public class RouteServiceJpaTest {
 
     @Container @ServiceConnection
     public static PostgreSQLContainer postgres = new PostgreSQLContainer("postgres:17");
+
+    @MockitoBean StationService.StationCatalogClient catalogClient;
 
     @Autowired private RouteService routeService;
     @Autowired private UserRepository userRepository;
