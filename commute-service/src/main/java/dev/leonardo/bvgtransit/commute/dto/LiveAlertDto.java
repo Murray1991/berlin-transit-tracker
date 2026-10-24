@@ -6,10 +6,17 @@ import java.util.UUID;
 
 public record LiveAlertDto(
         Long routeId,
+        String stopStartId,
+        String stopStartName,
+        String stopEndId,
+        String stopEndName,
+        String originId,
+        String originName,
+        String destinationId,
+        String destinationName,
+        String direction,
+        String lineName,
         LocalTime plannedWhen,
-        String fromId,
-        String toId,
-        String directionId,
-        String directionName,
+        LocalTime when,
         int delay,
         List<UUID> userIds) {}

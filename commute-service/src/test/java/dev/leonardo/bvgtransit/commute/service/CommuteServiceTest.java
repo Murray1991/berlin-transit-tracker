@@ -1,12 +1,12 @@
 package dev.leonardo.bvgtransit.commute.service;
 
-import dev.leonardo.bvgtransit.commute.dto.LiveAlertDto;
 import dev.leonardo.bvgtransit.commute.dto.LiveTransitDto;
 import dev.leonardo.bvgtransit.commute.dto.StopDto;
 import dev.leonardo.bvgtransit.commute.model.Route;
 import dev.leonardo.bvgtransit.commute.model.Station;
 import dev.leonardo.bvgtransit.commute.model.User;
 
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -33,54 +33,27 @@ class CommuteServiceTest {
     void sendAlertForDelayedTrain() {
         LocalTime time = LocalTime.now();
         Route route = createRoute("station-1", "station-2", time);
-        LiveTransitDto delayedDeparture =
-                new LiveTransitDto(
-                        "trip-1",
-                        time.plusMinutes(1),
-                        time.plusMinutes(1),
-                        120,
-                        "Direction",
-                        route.getEndStation().getId(),
-                        List.of(
-                                new StopDto("station-1", "statio-name-1"),
-                                new StopDto("station-2", "station-name-2")));
+        LiveTransitDto ltd = createLiveTransitData(time, route, 120);
 
         Mockito.when(routeService.getNextRoutes()).thenReturn(Collections.singletonList(route));
         Mockito.when(liveTransitService.getLiveDepartures(Set.of("station-1")))
-                .thenReturn(Map.of("station-1", List.of(delayedDeparture)));
+                .thenReturn(Map.of("station-1", List.of(ltd)));
 
         commuteService.pollLiveStations();
 
         Mockito.verify(liveAlertService, Mockito.times(1))
-                .sendLiveAlert(
-                        new LiveAlertDto(
-                                route.getId(),
-                                delayedDeparture.plannedWhen(),
-                                route.getStartStation().getId(),
-                                route.getEndStation().getId(),
-                                delayedDeparture.destinationId(),
-                                delayedDeparture.direction(),
-                                delayedDeparture.delay(),
-                                route.getUsers().stream().map(User::getPublicId).toList()));
+                .sendLiveAlert(CommuteService.createLiveAlertDto(route, ltd));
     }
 
     @Test
     void doesNotSendAlertForNonDelayedTrain() {
         LocalTime time = LocalTime.now();
         Route route = createRoute("station-1", "station-2", time);
-        LiveTransitDto delayedDeparture =
-                new LiveTransitDto(
-                        "trip-1",
-                        time.plusMinutes(1),
-                        time.plusMinutes(1),
-                        0,
-                        "Direction",
-                        route.getEndStation().getId(),
-                        List.of());
+        LiveTransitDto ltd = createLiveTransitData(time, route, 0);
 
         Mockito.when(routeService.getNextRoutes()).thenReturn(Collections.singletonList(route));
         Mockito.when(liveTransitService.getLiveDepartures(Set.of("station-1")))
-                .thenReturn(Map.of("station-1", List.of(delayedDeparture)));
+                .thenReturn(Map.of("station-1", List.of(ltd)));
 
         commuteService.pollLiveStations();
 
@@ -94,12 +67,14 @@ class CommuteServiceTest {
         Mockito.verifyNoInteractions(liveTransitService, liveAlertService);
     }
 
-    private Route createRoute(String stationId1, String stationId2, LocalTime time) {
+    public static Route createRoute(String stationId1, String stationId2, LocalTime time) {
         Station s1 = new Station();
         s1.setId(stationId1);
+        s1.setName("name" + stationId1);
 
         Station s2 = new Station();
         s2.setId(stationId2);
+        s2.setId("name" + stationId2);
 
         Route route = new Route();
         route.setStartStation(s1);
@@ -109,5 +84,23 @@ class CommuteServiceTest {
         route.addUser(new User());
 
         return route;
+    }
+
+    public static @NonNull LiveTransitDto createLiveTransitData(
+            LocalTime time, Route route, int delay) {
+        return new LiveTransitDto(
+                "trip-1",
+                time.plusMinutes(1),
+                time.plusMinutes(1),
+                delay,
+                "Direction",
+                "S9",
+                route.getStartStation().getId(),
+                route.getStartStation().getName(),
+                route.getEndStation().getId(),
+                route.getEndStation().getName(),
+                List.of(
+                        new StopDto("station-1", "statio-name-1"),
+                        new StopDto("station-2", "station-name-2")));
     }
 }

@@ -11,6 +11,7 @@ import java.time.ZoneId;
 import java.time.format.DateTimeParseException;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.IntStream;
 
 @Slf4j
@@ -20,12 +21,26 @@ public record LiveTransitDto(
         java.time.LocalTime plannedWhen,
         int delay,
         String direction,
+        String lineName,
+        String originId,
+        String originName,
         String destinationId,
+        String destinationName,
         List<StopDto> stopovers) {
 
     public LiveTransitDto withStopovers(List<StopDto> stopovers) {
         return new LiveTransitDto(
-                tripId, when, plannedWhen, delay, direction, destinationId, stopovers);
+                tripId,
+                when,
+                plannedWhen,
+                delay,
+                direction,
+                lineName,
+                originId,
+                originName,
+                destinationId,
+                destinationName,
+                stopovers);
     }
 
     public boolean stopAt(String stopId) {
@@ -57,7 +72,15 @@ public record LiveTransitDto(
                 plannedWhen,
                 node.get("delay").asInt(),
                 node.get("direction").asString(),
+                node.get("line").get("name").asString(),
+                Optional.ofNullable(node.get("origin"))
+                        .map(n -> n.get("id").asString())
+                        .orElse(null),
+                Optional.ofNullable(node.get("origin"))
+                        .map(n -> n.get("name").asString())
+                        .orElse(null),
                 node.get("destination").get("id").asString(),
+                node.get("destination").get("name").asString(),
                 List.of());
     }
 

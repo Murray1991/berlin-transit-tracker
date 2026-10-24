@@ -20,7 +20,7 @@ public class LiveAlertService {
     public void sendLiveAlert(LiveAlertDto liveAlertDto) {
         log.info(
                 "Valid transit data (direction {} at {}) for route {} has a delay of {}",
-                liveAlertDto.directionName(),
+                liveAlertDto.direction(),
                 liveAlertDto.plannedWhen(),
                 liveAlertDto.routeId(),
                 liveAlertDto.delay());

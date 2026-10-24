@@ -8,6 +8,7 @@ import dev.leonardo.bvgtransit.commute.model.User;
 
 import lombok.extern.slf4j.Slf4j;
 
+import org.jspecify.annotations.NonNull;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -65,17 +66,27 @@ public class CommuteService {
     private void sendLiveAlert(
             Route route, LiveTransitDto ltd, String startStationId, String stopStationId) {
         if (isAlertable(route.getId().toString(), ltd)) {
-            liveAlertService.sendLiveAlert(
-                    new LiveAlertDto(
-                            route.getId(),
-                            ltd.plannedWhen(),
-                            startStationId,
-                            stopStationId,
-                            ltd.destinationId(),
-                            ltd.direction(),
-                            ltd.delay(),
-                            route.getUsers().stream().map(User::getPublicId).toList()));
+            liveAlertService.sendLiveAlert(createLiveAlertDto(route, ltd));
         }
+    }
+
+    public static @NonNull LiveAlertDto createLiveAlertDto(Route route, LiveTransitDto ltd) {
+        return new LiveAlertDto(
+                route.getId(),
+                route.getStartStation().getId(),
+                route.getStartStation().getName(),
+                route.getEndStation().getId(),
+                route.getEndStation().getName(),
+                ltd.originId(),
+                ltd.originName(),
+                ltd.destinationId(),
+                ltd.destinationName(),
+                ltd.direction(),
+                ltd.lineName(),
+                ltd.plannedWhen(),
+                ltd.when(),
+                ltd.delay(),
+                route.getUsers().stream().map(User::getPublicId).toList());
     }
 
     private boolean isAlertable(String routeId, LiveTransitDto ltd) {

@@ -4,6 +4,8 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import dev.leonardo.bvgtransit.commute.config.RabbitMQConfig;
 import dev.leonardo.bvgtransit.commute.dto.LiveAlertDto;
+import dev.leonardo.bvgtransit.commute.dto.LiveTransitDto;
+import dev.leonardo.bvgtransit.commute.model.Route;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -16,8 +18,6 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
 import org.testcontainers.rabbitmq.RabbitMQContainer;
 
 import java.time.LocalTime;
-import java.util.List;
-import java.util.UUID;
 
 @SpringBootTest
 @Testcontainers
@@ -34,18 +34,12 @@ class LiveAlertServiceRabbitTest {
 
     @Test
     void sendsAlertToLiveAlerts() {
-
-        var alert =
-                new LiveAlertDto(
-                        11L,
-                        LocalTime.of(8, 30),
-                        "station-id-1",
-                        "station-id-2",
-                        "station-dir-id",
-                        "Station Direction",
-                        25,
-                        List.of(UUID.randomUUID(), UUID.randomUUID()));
+        LocalTime time = LocalTime.now();
+        Route route = CommuteServiceTest.createRoute("station-1", "station-2", time);
+        LiveTransitDto ltd = CommuteServiceTest.createLiveTransitData(time, route, 0);
+        LiveAlertDto alert = CommuteService.createLiveAlertDto(route, ltd);
         liveAlertService.sendLiveAlert(alert);
+
         var received = rabbitTemplate.receiveAndConvert(RabbitMQConfig.LIVE_ALERTS_QUEUE, 5000);
         assertEquals(alert, received);
     }
