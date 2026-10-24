@@ -15,7 +15,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalTime;
-import java.time.ZoneId;
 import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.UUID;
@@ -23,7 +22,6 @@ import java.util.UUID;
 @Slf4j
 @Service
 public class RouteService {
-    private static final ZoneId SERVICE_ZONE = ZoneId.of("Europe/Berlin");
 
     private final UserService userService;
     private final RouteRepository routeRepository;
@@ -101,10 +99,11 @@ public class RouteService {
 
     @Transactional
     public List<Route> getNextRoutes() {
-        LocalTime from = LocalTime.now(SERVICE_ZONE);
-        LocalTime to = from.plusMinutes(30);
+        LocalTime now = LocalTime.now();
+        LocalTime from = now.minusMinutes(30);
+        LocalTime to = now.plusMinutes(30);
 
-        log.info("Fetching next routes from {} to {}", from, to);
+        log.info("Fetching routes from {} to {}", from, to);
         if (from.isBefore(to)) {
             return routeRepository.findByDepartureTimeBetween(from, to);
         }
