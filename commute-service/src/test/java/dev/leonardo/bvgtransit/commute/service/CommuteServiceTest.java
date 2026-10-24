@@ -38,7 +38,7 @@ class CommuteServiceTest {
         Mockito.when(routeService.getNextRoutes()).thenReturn(Collections.singletonList(route));
         Mockito.when(liveTransitService.getLiveDepartures(Set.of("station-1")))
                 .thenReturn(Map.of("station-1", List.of(ltd)));
-
+        Mockito.when(liveTransitService.isAlertable(Mockito.any(), Mockito.any())).thenReturn(true);
         commuteService.pollLiveStations();
 
         Mockito.verify(liveAlertService, Mockito.times(1))
@@ -77,6 +77,7 @@ class CommuteServiceTest {
         s2.setId("name" + stationId2);
 
         Route route = new Route();
+        route.setId(11L);
         route.setStartStation(s1);
         route.setEndStation(s2);
 
