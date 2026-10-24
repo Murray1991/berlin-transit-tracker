@@ -102,7 +102,10 @@ public class LiveTransitService {
 
         JsonNode nodeDepartures = objectMapper.readTree(json).get("departures");
         for (JsonNode node : nodeDepartures) {
-            departures.add(LiveTransitDto.fromJsonNode(node));
+            LiveTransitDto ltd = LiveTransitDto.fromJsonNode(node);
+            if (ltd.when() != null) {
+                departures.add(ltd);
+            }
         }
 
         return departures;
