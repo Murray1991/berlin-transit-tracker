@@ -12,6 +12,7 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.postgresql.PostgreSQLContainer;
@@ -29,6 +30,7 @@ class LiveAlertServiceRabbitTest {
     @Container @ServiceConnection
     private static final RabbitMQContainer rabbit = new RabbitMQContainer("rabbitmq:4.3.6");
 
+    @MockitoBean StationService.StationCatalogClient stationCatalogClient;
     @Autowired LiveAlertService liveAlertService;
     @Autowired RabbitTemplate rabbitTemplate;
 
