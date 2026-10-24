@@ -121,18 +121,16 @@ public class LiveTransitService {
         }
 
         String redisKey = "route:" + routeId;
-        RouteDto prev =
-                objectMapper.convertValue(
-                        redisTemplate.opsForValue().get(redisKey), RouteDto.class);
-        RouteDto curr = new RouteDto(plannedWhen, delay);
-        if (curr.equals(prev)) {
-            return false;
-        }
+        Optional<RouteDto> prev =
+                Optional.ofNullable(redisTemplate.opsForValue().get(redisKey))
+                        .map(prevJson -> objectMapper.readValue(prevJson, RouteDto.class));
 
+        RouteDto curr = new RouteDto(plannedWhen, delay);
         redisTemplate
                 .opsForValue()
                 .set(redisKey, objectMapper.writeValueAsString(curr), Duration.ofHours(2));
-        return true;
+
+        return prev.isEmpty() || !curr.equals(prev.get());
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
