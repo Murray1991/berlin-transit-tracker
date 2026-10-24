@@ -100,7 +100,9 @@ class CommuteServiceTest {
                 route.getEndStation().getId(),
                 route.getEndStation().getName(),
                 List.of(
-                        new StopDto("station-1", "statio-name-1"),
-                        new StopDto("station-2", "station-name-2")));
+                        new StopDto(
+                                route.getStartStation().getId(), route.getStartStation().getName()),
+                        new StopDto(
+                                route.getEndStation().getId(), route.getEndStation().getName())));
     }
 }
