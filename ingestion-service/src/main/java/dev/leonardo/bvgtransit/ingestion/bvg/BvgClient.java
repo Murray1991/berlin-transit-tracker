@@ -31,6 +31,7 @@ public class BvgClient implements DeparturesClient, TripsClient {
                         uriBuilder ->
                                 uriBuilder
                                         .path("/stops/" + stationID + "/departures")
+                                        .queryParam("duration", 40)
                                         .queryParam("tram", false)
                                         .queryParam("bus", false)
                                         .queryParam("ferry", false)

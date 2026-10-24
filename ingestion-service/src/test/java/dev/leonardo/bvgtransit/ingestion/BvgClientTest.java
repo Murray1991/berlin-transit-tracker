@@ -76,9 +76,20 @@ class BvgClientTest {
         RecordedRequest request = server.takeRequest();
         assertNotNull(request);
         assertEquals("GET", request.getMethod());
+
+        HttpUrl url = request.getRequestUrl();
+        assertNotNull(url);
+
         assertEquals(
-                "/stops/900000/departures?tram=false&bus=false&ferry=false&express=false&regional=false",
-                request.getPath());
+                Map.of(
+                        "duration", "40",
+                        "tram", "false",
+                        "bus", "false",
+                        "ferry", "false",
+                        "express", "false",
+                        "regional", "false"),
+                url.queryParameterNames().stream()
+                        .collect(Collectors.toMap(name -> name, url::queryParameter)));
     }
 
     @Test
