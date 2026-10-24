@@ -70,17 +70,11 @@ class LiveAlertsConnection:
 
 
 async def on_message(msg_alert: dict):
-    log.info(
-        f" [x] Received alert for route {msg_alert['routeId']}: {msg_alert['delay']} min of delay"
-    )
-    user_ids = msg_alert["userIds"]
-    message = {
-        "routeId": msg_alert["routeId"],
-        "delay": msg_alert["delay"],
-        "message": f"{msg_alert['delay']} min of delay",
-    }
+    log.info(f" [x] Received alert for route {msg_alert['routeId']}")
+    user_ids = msg_alert.pop("userIds", [])
+    payload = json.dumps(msg_alert)
     for user_id in user_ids:
-        await manager.send(user_id, json.dumps(message))
+        await manager.send(user_id, payload)
 
 
 async def consume_live_alerts(
