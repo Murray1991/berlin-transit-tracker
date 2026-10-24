@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import dev.leonardo.bvgtransit.commute.dto.LiveTransitDto;
 import dev.leonardo.bvgtransit.commute.dto.StopDto;
 
+import org.jspecify.annotations.NonNull;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -37,13 +38,13 @@ public class LiveTransitService {
         return liveDepartures;
     }
 
-    private Collection<LiveTransitDto> withStopovers(Collection<LiveTransitDto> tripIds) {
-        if (tripIds == null || tripIds.isEmpty()) {
+    private Collection<LiveTransitDto> withStopovers(Collection<LiveTransitDto> liveTransits) {
+        if (liveTransits == null || liveTransits.isEmpty()) {
             return Collections.emptyList();
         }
 
         var keys =
-                tripIds.stream()
+                liveTransits.stream()
                         .map(LiveTransitDto::tripId)
                         .map(this::tripKey)
                         .map(this::keyForTrip)
@@ -56,13 +57,15 @@ public class LiveTransitService {
                         .map(this::parseTrip)
                         .collect(Collectors.toMap(trip -> keyForTrip(trip.id()), trip -> trip));
 
-        return tripIds.stream()
-                .map(
-                        ltd ->
-                                ltd.withStopovers(
-                                        map.get(keyForTrip(ltd.tripId())).stopovers().stream()
-                                                .map(StopOverDto::stop)
-                                                .toList()))
+        return liveTransits.stream().map(ltd -> ltd.withStopovers(getStopovers(ltd, map))).toList();
+    }
+
+    private @NonNull List<StopDto> getStopovers(LiveTransitDto ltd, Map<String, TripDto> map) {
+        return Optional.ofNullable(map.get(keyForTrip(ltd.tripId())))
+                .map(TripDto::stopovers)
+                .orElse(List.of())
+                .stream()
+                .map(StopOverDto::stop)
                 .toList();
     }
 
@@ -88,11 +91,15 @@ public class LiveTransitService {
     }
 
     private List<LiveTransitDto> getLiveDepartures(String stationId) {
-        String redisKey = "station:" + stationId + ":departures";
 
         List<LiveTransitDto> departures = new ArrayList<>();
 
+        String redisKey = "station:" + stationId + ":departures";
         String json = redisTemplate.opsForValue().get(redisKey);
+        if (json == null) {
+            return List.of();
+        }
+
         JsonNode nodeDepartures = objectMapper.readTree(json).get("departures");
         for (JsonNode node : nodeDepartures) {
             departures.add(LiveTransitDto.fromJsonNode(node));
