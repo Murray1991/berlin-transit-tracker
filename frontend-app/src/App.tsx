@@ -24,8 +24,19 @@ interface SavedRoute extends Route {
 
 interface LiveAlert {
     routeId: string;
+    stopStartId: string;
+    stopStartName: string;
+    stopEndId: string;
+    stopEndName: string;
+    originId: string;
+    originName: string;
+    destinationId: string;
+    destinationName: string;
+    direction: string;
+    lineName: string;
+    plannedWhen: string;
+    when: string;
     delay: number;
-    message: string;
 }
 
 let userPromise: Promise<User> | undefined;
@@ -93,7 +104,7 @@ function App() {
     const [from, setFrom] = useState<Station | undefined>(undefined);
     const [to, setTo] = useState<Station | undefined>(undefined);
     const [time, setTime] = useState("08:30");
-    const [alerts, setAlerts] = useState<LiveAlert[]>([]);
+    const [alerts, setAlerts] = useState<Record<number, LiveAlert>>([]);
     const [connected, setConnected] = useState(false);
     const [user, setUser] = useState<User | null>(null);
 
@@ -119,9 +130,13 @@ function App() {
         ws.onopen = () => setConnected(true);
         ws.onclose = () => setConnected(false);
         ws.onerror = () => setConnected(false);
+
         ws.onmessage = (event) => {
             const alert = JSON.parse(event.data) as LiveAlert;
-            setAlerts((prevAlerts) => [alert, ...prevAlerts]);
+            setAlerts((current) => ({
+                ...current,
+                [alert.routeId]: alert,
+            }));
         };
         return () => ws.close();
     }, [user]);
@@ -271,13 +286,32 @@ function App() {
 
                 <section className="alerts" aria-live="polite">
                     <h2>Live alerts</h2>
-                    {alerts.length == 0 ? (
+                    {Object.values(alerts).length == 0 ? (
                         <p className="empty">No alerts yet</p>
                     ) : (
-                        <ul>
-                            {alerts.map((alert, index) => (
-                                <li key={index}>
-                                    Route {alert.routeId}: {alert.message}
+                        <ul className="alert-list">
+                            {Object.values(alerts).map((alert) => (
+                                <li className={`alert-card ${
+                                    alert.delay > 0 ? "alert-card--delayed" : "alert-card--live"
+                                }`} key={alert.routeId}>
+
+                                    <div className="alert-route">
+                                        <strong>{alert.stopStartName} to {alert.stopEndName}</strong>
+                                        <span>Departure time: your-time</span>
+                                    </div>
+
+                                    <div className="alert-train">
+                                        <strong>{alert.lineName} {alert.direction}</strong>
+                                        <span>towards {alert.direction}</span>
+                                    </div>
+
+                                    <p>Departs: {alert.when.slice(0, 5)}</p>
+                                    <p>
+                                        {alert.delay == 0
+                                            ? "On time"
+                                            : `${Math.ceil(alert.delay / 60)} min delay`}
+                                    </p>
+
                                 </li>
                             ))}
                         </ul>

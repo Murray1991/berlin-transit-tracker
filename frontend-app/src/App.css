@@ -19,9 +19,13 @@
     margin: 32px auto;
     padding: 0 20px;
     display: grid;
-    grid-template-columns: 1fr 1.5fr;
+    grid-template-columns: 1fr 1fr;
     gap: 24px;
     align-items: start;
+}
+
+.alerts {
+    grid-column: 1/-1;
 }
 
 .connection {
@@ -101,4 +105,42 @@
     background: #a33;
     border: 0;
     cursor: pointer;
+}
+
+.alert-list {
+    display: grid;
+    gap: 12px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.alert-card {
+    padding: 14px;
+    border: 1px solid;
+    border-left-width: 5px;
+    border-radius: 8px;
+}
+
+.alert-card--live {
+    color: #14532d;
+    background: #f0fdf4;
+    border-color: #86efac;
+}
+
+.alert-card--delayed {
+    color: #7c2d12;
+    background: #fff7ed;
+    border-color: #fdba74;
+}
+
+.alert-route,
+.alert-train {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.alert-card p {
+    margin: 8px 0 0;
 }
