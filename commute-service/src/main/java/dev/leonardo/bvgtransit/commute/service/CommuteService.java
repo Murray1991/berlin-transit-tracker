@@ -64,15 +64,21 @@ public class CommuteService {
 
     private void sendLiveAlert(
             Route route, LiveTransitDto ltd, String startStationId, String stopStationId) {
-        liveAlertService.sendLiveAlert(
-                new LiveAlertDto(
-                        route.getId(),
-                        ltd.plannedWhen(),
-                        startStationId,
-                        stopStationId,
-                        ltd.destinationId(),
-                        ltd.direction(),
-                        ltd.delay(),
-                        route.getUsers().stream().map(User::getPublicId).toList()));
+        if (isAlertable(route.getId().toString(), ltd)) {
+            liveAlertService.sendLiveAlert(
+                    new LiveAlertDto(
+                            route.getId(),
+                            ltd.plannedWhen(),
+                            startStationId,
+                            stopStationId,
+                            ltd.destinationId(),
+                            ltd.direction(),
+                            ltd.delay(),
+                            route.getUsers().stream().map(User::getPublicId).toList()));
+        }
+    }
+
+    private boolean isAlertable(String routeId, LiveTransitDto ltd) {
+        return liveTransitService.isAlertable(routeId, ltd);
     }
 }

@@ -13,6 +13,8 @@ import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
+import java.time.Duration;
+import java.time.LocalTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -108,9 +110,36 @@ public class LiveTransitService {
         return departures;
     }
 
+    public boolean isAlertable(String routeId, LiveTransitDto ltd) {
+        LocalTime plannedWhen = ltd.plannedWhen();
+        int delay = ltd.delay();
+
+        LocalTime when = plannedWhen.plusSeconds(delay);
+        if (!when.isAfter(LocalTime.now())) {
+            return false;
+        }
+
+        String redisKey = "route:" + routeId;
+        RouteDto prev =
+                objectMapper.convertValue(
+                        redisTemplate.opsForValue().get(redisKey), RouteDto.class);
+        RouteDto curr = new RouteDto(plannedWhen, delay);
+        if (curr.equals(prev)) {
+            return false;
+        }
+
+        redisTemplate
+                .opsForValue()
+                .set(redisKey, objectMapper.writeValueAsString(curr), Duration.ofHours(2));
+        return true;
+    }
+
     @JsonIgnoreProperties(ignoreUnknown = true)
     public record TripDto(String id, List<StopOverDto> stopovers) {}
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     public record StopOverDto(StopDto stop) {}
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public record RouteDto(LocalTime plannedWhen, int delay) {}
 }
