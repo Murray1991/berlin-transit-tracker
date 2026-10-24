@@ -2,7 +2,7 @@ import asyncio
 import json
 import logging
 import os
-import sys
+from contextlib import asynccontextmanager
 from typing import Awaitable, Callable, Dict
 
 import aio_pika
@@ -10,7 +10,6 @@ from fastapi import FastAPI, WebSocket
 from starlette.websockets import WebSocketDisconnect
 
 QUEUE_LIVE_ALERTS = "live-alerts"
-app = FastAPI()
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger(__name__)
@@ -32,23 +31,6 @@ class ConnectionManager:
         if user_id in self.connections:
             websocket = self.connections[user_id]
             await websocket.send_bytes(message)
-
-
-manager = ConnectionManager()
-
-
-@app.websocket("/ws/{user_id}")
-async def websocket_endpoint(websocket: WebSocket, user_id: str):
-    await manager.connect(user_id, websocket)
-    try:
-        while True:
-            # keep connection alive
-            _ = await websocket.receive_text()
-    except WebSocketDisconnect as e:
-        log.info(f"Disconnected for {user_id}: code={e.code} reason={e.reason}")
-        pass
-    finally:
-        manager.disconnect(user_id)
 
 
 class RabbitMqSettings:
@@ -111,7 +93,9 @@ async def consume_live_alerts(
                     await on_message(json.loads(message.body))
 
 
-async def main() -> None:
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    log.info("Started notification service")
 
     settings = RabbitMqSettings(
         host=os.getenv("RABBITMQ_HOST", "localhost"),
@@ -119,12 +103,29 @@ async def main() -> None:
         login=os.getenv("RABBITMQ_USER", "guest"),
         password=os.getenv("RABBITMQ_PASSWORD", "guest"),
     )
-    await consume_live_alerts(settings, on_message)
 
+    consumer_task = asyncio.create_task(consume_live_alerts(settings, on_message))
 
-if __name__ == "__main__":
     try:
-        asyncio.run(main())
-    except KeyboardInterrupt:
-        print("^C received, shutting down")
-        sys.exit(0)
+        yield
+    finally:
+        consumer_task.cancel()
+        await consumer_task
+
+
+manager = ConnectionManager()
+app = FastAPI(lifespan=lifespan)
+
+
+@app.websocket("/ws/{user_id}")
+async def websocket_endpoint(websocket: WebSocket, user_id: str):
+    await manager.connect(user_id, websocket)
+    try:
+        while True:
+            # keep connection alive
+            _ = await websocket.receive_text()
+    except WebSocketDisconnect as e:
+        log.info(f"Disconnected for {user_id}: code={e.code} reason={e.reason}")
+        pass
+    finally:
+        manager.disconnect(user_id)
