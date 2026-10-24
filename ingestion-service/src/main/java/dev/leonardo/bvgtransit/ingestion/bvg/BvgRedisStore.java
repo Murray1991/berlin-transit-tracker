@@ -23,7 +23,7 @@ public class BvgRedisStore implements DeparturesStore, TripsStore {
     public @NonNull Mono<Boolean> storeDepartures(String stationID, String json) {
         return redisTemplate
                 .opsForValue()
-                .set(keyForStation(stationID), json, Duration.ofSeconds(180));
+                .set(keyForStation(stationID), json, Duration.ofMinutes(5));
     }
 
     private String keyForStation(String stationID) {
