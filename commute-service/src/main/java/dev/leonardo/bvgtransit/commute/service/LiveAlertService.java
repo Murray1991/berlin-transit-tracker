@@ -17,7 +17,7 @@ public class LiveAlertService {
         rabbitMessagingTemplate = rabbitMessagingTemplate_;
     }
 
-    public void sendDelayAlert(LiveAlertDto liveAlertDto) {
+    public void sendLiveAlert(LiveAlertDto liveAlertDto) {
         log.info(
                 "Valid transit data (direction {} at {}) for route {} has a delay of {}",
                 liveAlertDto.directionName(),

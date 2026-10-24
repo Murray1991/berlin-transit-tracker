@@ -52,7 +52,7 @@ class CommuteServiceTest {
         commuteService.pollLiveStations();
 
         Mockito.verify(liveAlertService, Mockito.times(1))
-                .sendDelayAlert(
+                .sendLiveAlert(
                         new LiveAlertDto(
                                 route.getId(),
                                 delayedDeparture.plannedWhen(),

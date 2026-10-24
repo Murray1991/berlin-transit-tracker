@@ -45,7 +45,7 @@ class LiveAlertServiceRabbitTest {
                         "Station Direction",
                         25,
                         List.of(UUID.randomUUID(), UUID.randomUUID()));
-        liveAlertService.sendDelayAlert(alert);
+        liveAlertService.sendLiveAlert(alert);
         var received = rabbitTemplate.receiveAndConvert(RabbitMQConfig.LIVE_ALERTS_QUEUE, 5000);
         assertEquals(alert, received);
     }

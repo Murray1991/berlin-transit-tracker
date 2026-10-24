@@ -58,20 +58,21 @@ public class CommuteService {
                     .filter(ltd -> ltd.plannedWhen().isAfter(departureTime))
                     .filter(ltd1 -> ltd1.hasStopAfter(startStationId, stopStationId))
                     .min(Comparator.comparing(LiveTransitDto::plannedWhen))
-                    .ifPresent(
-                            ltd ->
-                                    liveAlertService.sendDelayAlert(
-                                            new LiveAlertDto(
-                                                    route.getId(),
-                                                    ltd.plannedWhen(),
-                                                    startStationId,
-                                                    stopStationId,
-                                                    ltd.destinationId(),
-                                                    ltd.direction(),
-                                                    ltd.delay(),
-                                                    route.getUsers().stream()
-                                                            .map(User::getPublicId)
-                                                            .toList())));
+                    .ifPresent(ltd -> sendLiveAlert(route, ltd, startStationId, stopStationId));
         }
+    }
+
+    private void sendLiveAlert(
+            Route route, LiveTransitDto ltd, String startStationId, String stopStationId) {
+        liveAlertService.sendLiveAlert(
+                new LiveAlertDto(
+                        route.getId(),
+                        ltd.plannedWhen(),
+                        startStationId,
+                        stopStationId,
+                        ltd.destinationId(),
+                        ltd.direction(),
+                        ltd.delay(),
+                        route.getUsers().stream().map(User::getPublicId).toList()));
     }
 }
