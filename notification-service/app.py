@@ -70,7 +70,7 @@ class LiveAlertsConnection:
 
 
 async def on_message(msg_alert: dict):
-    print(
+    log.info(
         f" [x] Received alert for route {msg_alert['routeId']}: {msg_alert['delay']} min of delay"
     )
     user_ids = msg_alert["userIds"]
