@@ -73,11 +73,11 @@ public record LiveTransitDto(
                 node.get("delay").asInt(),
                 node.get("direction").asString(),
                 node.get("line").get("name").asString(),
-                Optional.ofNullable(node.get("origin"))
-                        .map(n -> n.get("id").asString())
+                Optional.ofNullable(node.get("origin").get("id"))
+                        .map(JsonNode::asString)
                         .orElse(null),
-                Optional.ofNullable(node.get("origin"))
-                        .map(n -> n.get("name").asString())
+                Optional.ofNullable(node.get("origin").get("name"))
+                        .map(JsonNode::asString)
                         .orElse(null),
                 node.get("destination").get("id").asString(),
                 node.get("destination").get("name").asString(),
