@@ -41,12 +41,16 @@ class LiveTransitServiceRedisTest {
                 """
                 {
                   "departures": [{
-                    "tripId": "trip-1",
+                    "tripId": "1|2|3|4|5",
                     "when": "2026-10-15T08:31:00+02:00",
                     "plannedWhen": "2026-10-15T08:30:00+02:00",
                     "delay": 1,
                     "direction": "Potsdam",
-                    "destination": { "id": "900230999" }
+                    "origin": null,
+                    "destination": { "id": "900230999", "name": "station-name" },
+                    "line": {
+                        "name": "S9"
+                    }
                   }]
                 }
                 """;
@@ -56,7 +60,7 @@ class LiveTransitServiceRedisTest {
         assertEquals(1, departures.size());
 
         LiveTransitDto departure = departures.stream().findFirst().get();
-        assertEquals("trip-1", departure.tripId());
+        assertEquals("1|2|3|4|5", departure.tripId());
         assertEquals(LocalTime.of(8, 31), departure.when());
         assertEquals(LocalTime.of(8, 30), departure.plannedWhen());
         assertEquals(1, departure.delay());
