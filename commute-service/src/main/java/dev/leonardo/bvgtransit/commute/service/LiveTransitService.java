@@ -65,10 +65,8 @@ public class LiveTransitService {
     private @NonNull List<StopDto> getStopovers(LiveTransitDto ltd, Map<String, TripDto> map) {
         return Optional.ofNullable(map.get(keyForTrip(ltd.tripId())))
                 .map(TripDto::stopovers)
-                .orElse(List.of())
-                .stream()
-                .map(StopOverDto::stop)
-                .toList();
+                .map(stopOverDtos -> stopOverDtos.stream().map(StopOverDto::stop).toList())
+                .orElse(ltd.stopovers());
     }
 
     private String keyForTrip(String tripID) throws IllegalArgumentException {
