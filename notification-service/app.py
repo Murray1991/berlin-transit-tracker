@@ -27,10 +27,10 @@ class ConnectionManager:
         if user_id in self.connections:
             del self.connections[user_id]
 
-    async def send(self, user_id: str, message: bytes):
+    async def send(self, user_id: str, message: str):
         if user_id in self.connections:
             websocket = self.connections[user_id]
-            await websocket.send_bytes(message)
+            await websocket.send_text(message)
 
 
 class RabbitMqSettings:
@@ -80,7 +80,7 @@ async def on_message(msg_alert: dict):
         "message": f"{msg_alert['delay']} min of delay",
     }
     for user_id in user_ids:
-        await manager.send(user_id, json.dumps(message).encode())
+        await manager.send(user_id, json.dumps(message))
 
 
 async def consume_live_alerts(
