@@ -51,10 +51,14 @@ services:
     ports:
       - "8082:8080"
     depends_on:
-      - db
-      - redis
-      - rabbitmq
-      - ingestion-service
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      rabbitmq:
+        condition: service_healthy
+      ingestion-service:
+        condition: service_started
 
   notification-service:
     build:
@@ -68,8 +72,10 @@ services:
     ports:
       - "5000:5000"
     depends_on:
-      - rabbitmq
-      - commute-service
+      commute-service:
+        condition: service_started
+      rabbitmq:
+        condition: service_healthy
 
   bvg-api:
     image: derhuerst/bvg-rest:6
@@ -91,6 +97,11 @@ services:
     volumes:
       - rabbitmq-lib:/var/lib/rabbitmq
       - rabbitmq-log:/var/log/rabbitmq
+    healthcheck:
+      test: [ "CMD", "rabbitmq-diagnostics", "-q", "check_running" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
 
   redis:
     image: redis:8.10.2
