@@ -2,7 +2,7 @@
 
 The Berlin Transit Tracker wants to be a polyglot microservices application. The system should monitor the Berlin public transport network for delays and notify users in real time.
 
-This project serves as a more-or-less comprehensive playground for learning relevant technologies in today's microservices world.
+This project is still a work in progress and serves as a more-or-less comprehensive playground for learning relevant technologies in today's microservices world.
 
 # The Architecture
 
