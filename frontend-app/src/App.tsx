@@ -296,16 +296,18 @@ function App() {
                                 }`} key={alert.routeId}>
 
                                     <div className="alert-route">
-                                        <strong>{alert.stopStartName} to {alert.stopEndName}</strong>
-                                        <span>Departure time: your-time</span>
+                                        <strong>{alert.stopStartName} {" → "} {alert.stopEndName}</strong>
+                                        <strong>{savedRoutes
+                                            .find((route) => route.id === alert.routeId)
+                                            ?.departureTime.slice(0, 5) ?? "Unknown"}
+                                        </strong>
                                     </div>
 
                                     <div className="alert-train">
-                                        <strong>{alert.lineName} {alert.direction}</strong>
-                                        <span>towards {alert.direction}</span>
+                                        <p>{alert.lineName} {alert.direction}</p>
                                     </div>
 
-                                    <p>Departs: {alert.when.slice(0, 5)}</p>
+                                    <span>Departs: {alert.when.slice(0, 5)}</span>
                                     <p>
                                         {alert.delay == 0
                                             ? "On time"
