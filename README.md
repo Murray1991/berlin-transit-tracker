@@ -51,10 +51,6 @@ It intecepts API calls and routes them to the appropriate service.
 
 ### Frontend
 
-The frontend will probably written with plain HTML/Javascript. The UI should be a basic form with a button "Save" and three fields:
+A React and TypeScript application built with Vite. It loads stations, creates users and saves routes via the services behind the API Gateway. The frontend displays live alerts received over a WebSocket connection.
 
-1. Start station
-2. End station
-3. Departure Time
-
-I don't want to lose my mind too much on authentication and security aspects. So users do not create accounts or passwords, the frontend generates a unique ID that will be stored in local storage. The ID will be passed in API calls to link a user to their saved daily commute routes.
+I don't want to lose my mind too much on authentication and security aspects. So users do not create accounts or passwords, the frontend asks to the backend to create an user, the backend returns user details including an ID. The ID will be passed in API calls to link a user to their saved daily commute routes.
