@@ -16,6 +16,9 @@ public interface RouteRepository extends JpaRepository<Route, Long> {
 
     Optional<Route> findByPublicId(UUID publicId);
 
+    Optional<Route> findByStartStation_IdAndEndStation_IdAndDepartureTime(
+            String startStation, String endStation, LocalTime departureTime);
+
     @EntityGraph(attributePaths = {"users", "startStation", "endStation"})
     List<Route> findByDepartureTimeBetween(LocalTime from, LocalTime to);
 }

@@ -1,6 +1,7 @@
 package dev.leonardo.bvgtransit.commute.model;
 
 import jakarta.persistence.*;
+
 import lombok.Getter;
 import lombok.Setter;
 
@@ -10,7 +11,12 @@ import java.util.Set;
 import java.util.UUID;
 
 @Entity
-@Table(name = "routes")
+@Table(
+        name = "routes",
+        uniqueConstraints =
+                @UniqueConstraint(
+                        name = "uk_routes_start_end_departure",
+                        columnNames = {"start_station_id", "end_station_id", "departure_time"}))
 @Getter
 @Setter
 public class Route {

@@ -11,6 +11,7 @@ import jakarta.transaction.Transactional;
 
 import lombok.extern.slf4j.Slf4j;
 
+import org.jspecify.annotations.NonNull;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -62,40 +63,35 @@ public class RouteService {
                     HttpStatus.BAD_REQUEST, "Invalid departure time. Must be in the format HH:MM");
         }
 
-        Station startStation =
-                stationRepository
-                        .findById(request.startStation())
-                        .orElseThrow(
-                                () ->
-                                        new ResponseStatusException(
-                                                HttpStatus.NOT_FOUND,
-                                                String.format(
-                                                        "Station %s not found",
-                                                        request.startStation())));
-        Station endStation =
-                stationRepository
-                        .findById(request.endStation())
-                        .orElseThrow(
-                                () ->
-                                        new ResponseStatusException(
-                                                HttpStatus.NOT_FOUND,
-                                                String.format(
-                                                        "Station %s not found",
-                                                        request.endStation())));
+        Route saved =
+                routeRepository
+                        .findByStartStation_IdAndEndStation_IdAndDepartureTime(
+                                request.startStation(), request.endStation(), departureTime)
+                        .orElseGet(
+                                () -> {
+                                    Route route = new Route();
+                                    route.setStartStation(getStation(request.startStation()));
+                                    route.setEndStation(getStation(request.endStation()));
+                                    route.setDepartureTime(departureTime);
+                                    return routeRepository.save(route);
+                                });
 
-        Route route = new Route();
-        route.setStartStation(startStation);
-        route.setEndStation(endStation);
-        route.setDepartureTime(departureTime);
-
-        userService.addRoute(publicUserId, route);
-
-        Route saved = routeRepository.save(route);
+        userService.addRoute(publicUserId, saved);
         return new RouteDto.Response(
                 saved.getPublicId(),
                 saved.getStartStation().getId(),
                 saved.getEndStation().getId(),
                 saved.getDepartureTime().toString());
+    }
+
+    private @NonNull Station getStation(String stationId) {
+        return stationRepository
+                .findById(stationId)
+                .orElseThrow(
+                        () ->
+                                new ResponseStatusException(
+                                        HttpStatus.NOT_FOUND,
+                                        String.format("Station %s not found", stationId)));
     }
 
     @Transactional
