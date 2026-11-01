@@ -11,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -26,6 +27,11 @@ public class UserService {
     public UserDto.Response createUser() {
         User user = userRepository.save(new User());
         return new UserDto.Response(user.getPublicId());
+    }
+
+    @Transactional
+    public Optional<User> getUser(UUID userId) {
+        return userRepository.findByPublicId(userId);
     }
 
     @Transactional

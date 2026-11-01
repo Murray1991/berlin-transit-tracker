@@ -3,6 +3,7 @@ package dev.leonardo.bvgtransit.commute.service;
 import dev.leonardo.bvgtransit.commute.dto.RouteDto;
 import dev.leonardo.bvgtransit.commute.model.Route;
 import dev.leonardo.bvgtransit.commute.model.Station;
+import dev.leonardo.bvgtransit.commute.model.User;
 import dev.leonardo.bvgtransit.commute.repository.RouteRepository;
 import dev.leonardo.bvgtransit.commute.repository.StationRepository;
 
@@ -111,5 +112,34 @@ public class RouteService {
         List<Route> routes = routeRepository.findByDepartureTimeBetween(from, LocalTime.MAX);
         routes.addAll(routeRepository.findByDepartureTimeBetween(LocalTime.MIDNIGHT, to));
         return routes;
+    }
+
+    @Transactional
+    public void deleteRoute(UUID userId, Long routeId) {
+        User user =
+                userService
+                        .getUser(userId)
+                        .orElseThrow(
+                                () ->
+                                        new ResponseStatusException(
+                                                HttpStatus.NOT_FOUND, "User not found"));
+        Route route =
+                routeRepository
+                        .findById(routeId)
+                        .orElseThrow(
+                                () ->
+                                        new ResponseStatusException(
+                                                HttpStatus.NOT_FOUND, "Route not found"));
+
+        if (!user.getSavedRoutes().remove(route)) {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "Route not found for user " + user.getId() + " " + user.getPublicId());
+        }
+
+        route.getUsers().remove(user);
+        if (route.getUsers().isEmpty()) {
+            routeRepository.delete(route);
+        }
     }
 }

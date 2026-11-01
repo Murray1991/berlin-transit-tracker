@@ -24,4 +24,10 @@ public class RouteController {
         var response = routeService.saveRoute(userId, routeDto);
         return ResponseEntity.ok(response);
     }
+
+    @DeleteMapping
+    public ResponseEntity<Void> deleteRoute(UUID userId, @PathVariable String routeId) {
+        routeService.deleteRoute(userId, Long.valueOf(routeId));
+        return ResponseEntity.noContent().build();
+    }
 }
