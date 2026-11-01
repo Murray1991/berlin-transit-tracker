@@ -12,6 +12,7 @@ import dev.leonardo.bvgtransit.commute.repository.UserRepository;
 
 import jakarta.persistence.EntityManager;
 
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -43,33 +44,18 @@ public class RouteServiceJpaTest {
     @Test
     @Transactional
     public void savesRouteWithUser() {
-        User user = new User();
-        user.setUsername("name");
-        user.setEmail("name@email.test");
-        userRepository.save(user);
+        User user = saveUser("name");
 
-        String stationId1 = "some-id-1";
-        Station station1 = new Station();
-        station1.setId(stationId1);
-        station1.setName("station-1");
-        stationRepository.save(station1);
+        String stationId1 = "station1";
+        String stationId2 = "station2";
 
-        String stationId2 = "some-id-2";
-        Station station2 = new Station();
-        station2.setId(stationId2);
-        station2.setName("station-2");
-        stationRepository.save(station2);
-
+        Station station1 = saveStation(stationId1);
+        Station station2 = saveStation(stationId2);
         assertEquals(stationId1, station1.getId());
         assertEquals(stationId2, station2.getId());
 
         String departureTime = "08:30";
-        var response =
-                routeService.saveRoute(
-                        user.getPublicId(),
-                        new RouteDto.Request(station1.getId(), station2.getId(), departureTime));
-
-        // check response
+        var response = saveRouteForUser(user, station1, station2, departureTime);
         assertNotNull(response);
         assertEquals(stationId1, response.startStation());
         assertEquals(stationId2, response.endStation());
@@ -92,57 +78,18 @@ public class RouteServiceJpaTest {
     @Test
     @Transactional
     public void returnsNextRoutes() {
-        User user1 = new User();
-        user1.setUsername("name1");
-        user1.setEmail("name1@email.test");
-        userRepository.save(user1);
+        User user1 = saveUser("name1");
+        User user2 = saveUser("name2");
 
-        User user2 = new User();
-        user2.setUsername("name2");
-        user2.setEmail("name2@email.test");
-        userRepository.save(user2);
-
-        String stationId1 = "some-id-1";
-        Station station1 = new Station();
-        station1.setId(stationId1);
-        station1.setName("station-1");
-        stationRepository.save(station1);
-
-        String stationId2 = "some-id-2";
-        Station station2 = new Station();
-        station2.setId(stationId2);
-        station2.setName("station-2");
-        stationRepository.save(station2);
-
-        String stationId3 = "some-id-3";
-        Station station3 = new Station();
-        station3.setId(stationId3);
-        station3.setName("station-3");
-        stationRepository.save(station3);
-
-        String stationId4 = "some-id-4";
-        Station station4 = new Station();
-        station4.setId(stationId4);
-        station4.setName("station-4");
-        stationRepository.save(station4);
+        Station station1 = saveStation("station1");
+        Station station2 = saveStation("station2");
+        Station station3 = saveStation("station3");
+        Station station4 = saveStation("station4");
 
         LocalTime from = LocalTime.now();
-        var resp1 =
-                routeService.saveRoute(
-                        user1.getPublicId(),
-                        new RouteDto.Request(
-                                stationId1, stationId2, from.plusMinutes(10).toString()));
-        var resp2 =
-                routeService.saveRoute(
-                        user2.getPublicId(),
-                        new RouteDto.Request(
-                                stationId1, stationId3, from.plusMinutes(27).toString()));
-
-        var resp3 =
-                routeService.saveRoute(
-                        user1.getPublicId(),
-                        new RouteDto.Request(
-                                stationId1, stationId4, from.plusMinutes(32).toString()));
+        var resp1 = saveRouteForUser(user1, station1, station2, from.plusMinutes(10).toString());
+        var resp2 = saveRouteForUser(user2, station1, station3, from.plusMinutes(27).toString());
+        var resp3 = saveRouteForUser(user1, station1, station4, from.plusMinutes(32).toString());
 
         // synchronize and detach persistence context
         entityManager.flush();
@@ -156,5 +103,26 @@ public class RouteServiceJpaTest {
 
         Route route3 = routeRepository.findById(resp3.id()).orElseThrow();
         assertEquals(resp3.id(), route3.getId());
+    }
+
+    private RouteDto.Response saveRouteForUser(
+            User user1, Station station1, Station station2, String from) {
+        return routeService.saveRoute(
+                user1.getPublicId(),
+                new RouteDto.Request(station1.getId(), station2.getId(), from));
+    }
+
+    private @NonNull User saveUser(String name) {
+        User user = new User();
+        user.setUsername(name);
+        user.setEmail(name + "@email.test");
+        return userRepository.save(user);
+    }
+
+    private @NonNull Station saveStation(String stationId) {
+        Station station = new Station();
+        station.setId(stationId);
+        station.setName(stationId + "-name");
+        return stationRepository.save(station);
     }
 }
