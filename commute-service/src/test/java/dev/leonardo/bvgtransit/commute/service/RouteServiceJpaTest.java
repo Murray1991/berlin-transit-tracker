@@ -17,14 +17,18 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
+import org.springframework.http.HttpStatus;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.postgresql.PostgreSQLContainer;
 
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 @SpringBootTest
 @Testcontainers
@@ -67,7 +71,7 @@ public class RouteServiceJpaTest {
 
         // check db
         User savedUser = userRepository.findById(user.getId()).orElseThrow();
-        Route savedRoute = routeRepository.findById(response.id()).orElseThrow();
+        Route savedRoute = routeRepository.findByPublicId(response.id()).orElseThrow();
         assertNotNull(savedRoute.getId());
         assertEquals(stationId1, savedRoute.getStartStation().getId());
         assertEquals(stationId2, savedRoute.getEndStation().getId());
@@ -98,11 +102,55 @@ public class RouteServiceJpaTest {
         List<Route> nextRoutes = routeService.getNextRoutes();
         assertNotNull(nextRoutes);
         assertEquals(2, nextRoutes.size());
-        assertEquals(resp1.id(), nextRoutes.get(0).getId());
-        assertEquals(resp2.id(), nextRoutes.get(1).getId());
+        assertEquals(resp1.id(), nextRoutes.get(0).getPublicId());
+        assertEquals(resp2.id(), nextRoutes.get(1).getPublicId());
 
-        Route route3 = routeRepository.findById(resp3.id()).orElseThrow();
-        assertEquals(resp3.id(), route3.getId());
+        Route route3 = routeRepository.findByPublicId(resp3.id()).orElseThrow();
+        assertEquals(resp3.id(), route3.getPublicId());
+    }
+
+    @Test
+    @Transactional
+    public void deleteRoute() {
+        User user1 = saveUser("name1");
+        User user2 = saveUser("name2");
+
+        LocalTime time = LocalTime.parse("08:30");
+        Station station1 = saveStation("station1");
+        Station station2 = saveStation("station2");
+
+        var resp1 = saveRouteForUser(user1, station1, station2, time.toString());
+        var resp2 = saveRouteForUser(user2, station1, station2, time.toString());
+        assertEquals(resp1.id(), resp2.id());
+
+        UUID routeId = resp1.id();
+
+        // another user cannot delete a route that has not
+        User other = saveUser("other");
+        var error =
+                assertThrows(
+                        ResponseStatusException.class,
+                        () -> routeService.deleteRoute(other.getPublicId(), routeId));
+        assertEquals(HttpStatus.NOT_FOUND, error.getStatusCode());
+        entityManager.flush();
+        entityManager.clear();
+        Optional<Route> route = routeRepository.findByPublicId(routeId);
+        assertTrue(route.isPresent());
+        assertEquals(2, route.orElseThrow().getUsers().size());
+
+        // delete one user keep route for the other
+        routeService.deleteRoute(user1.getPublicId(), routeId);
+        entityManager.flush();
+        entityManager.clear();
+        route = routeRepository.findByPublicId(routeId);
+        assertTrue(route.isPresent());
+        assertEquals(1, route.orElseThrow().getUsers().size());
+
+        // delete last user removes route
+        routeService.deleteRoute(user2.getPublicId(), routeId);
+        entityManager.flush();
+        entityManager.clear();
+        assertTrue(routeRepository.findByPublicId(routeId).isEmpty());
     }
 
     private RouteDto.Response saveRouteForUser(
