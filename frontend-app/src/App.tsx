@@ -172,10 +172,23 @@ function App() {
         setTo(undefined);
     };
 
-    const deleteRoute = (id: string) => {
-        var filtered = savedRoutes.filter((sr) => sr.id !== id);
+    const deleteRoute = async (id: string) => {
+        if (!user) {
+            return;
+        }
+
+        let filtered = savedRoutes.filter((sr) => sr.id !== id);
         setSavedRoutes(filtered);
         localStorage.setItem("savedRoutes", JSON.stringify(filtered));
+
+        const query = new URLSearchParams({userId: user.uuid});
+        const response = await fetch(`/api/routes/${id}?${query}`, {
+            method: "DELETE",
+        });
+
+        if (!response.ok) {
+            throw new Error(`Could not delete route: ${response.status}`);
+        }
     };
 
     return (
