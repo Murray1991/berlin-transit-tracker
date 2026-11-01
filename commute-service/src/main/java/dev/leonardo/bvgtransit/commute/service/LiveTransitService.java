@@ -111,7 +111,7 @@ public class LiveTransitService {
         return departures;
     }
 
-    public boolean isAlertable(String routeId, LiveTransitDto ltd) {
+    public boolean isAlertable(UUID routeId, LiveTransitDto ltd) {
         LocalTime plannedWhen = ltd.plannedWhen();
         int delay = ltd.delay();
 

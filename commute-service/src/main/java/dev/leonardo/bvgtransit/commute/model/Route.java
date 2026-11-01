@@ -7,6 +7,7 @@ import lombok.Setter;
 import java.time.LocalTime;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 
 @Entity
 @Table(name = "routes")
@@ -16,6 +17,9 @@ public class Route {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(unique = true, nullable = false, updatable = false)
+    private UUID publicId = UUID.randomUUID();
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "start_station_id")

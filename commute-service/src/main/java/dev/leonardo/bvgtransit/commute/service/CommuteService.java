@@ -64,14 +64,14 @@ public class CommuteService {
     }
 
     private void sendLiveAlert(Route route, LiveTransitDto ltd) {
-        if (isAlertable(route.getId().toString(), ltd)) {
+        if (isAlertable(route.getPublicId(), ltd)) {
             liveAlertService.sendLiveAlert(createLiveAlertDto(route, ltd));
         }
     }
 
     public static @NonNull LiveAlertDto createLiveAlertDto(Route route, LiveTransitDto ltd) {
         return new LiveAlertDto(
-                route.getId(),
+                route.getPublicId(),
                 route.getStartStation().getId(),
                 route.getStartStation().getName(),
                 route.getEndStation().getId(),
@@ -88,7 +88,7 @@ public class CommuteService {
                 route.getUsers().stream().map(User::getPublicId).toList());
     }
 
-    private boolean isAlertable(String routeId, LiveTransitDto ltd) {
+    private boolean isAlertable(UUID routeId, LiveTransitDto ltd) {
         return liveTransitService.isAlertable(routeId, ltd);
     }
 }

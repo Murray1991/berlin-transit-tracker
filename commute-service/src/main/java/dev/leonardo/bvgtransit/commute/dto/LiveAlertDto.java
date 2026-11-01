@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.UUID;
 
 public record LiveAlertDto(
-        Long routeId,
+        UUID routeId,
         String stopStartId,
         String stopStartName,
         String stopEndId,
