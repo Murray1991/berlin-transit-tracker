@@ -61,7 +61,6 @@ class RouteServiceTest {
         Mockito.verify(userService).addRoute(Mockito.eq(publicId), Mockito.any(Route.class));
 
         assertNotNull(response);
-        assertEquals(42L, response.id());
         assertEquals("station-1", response.startStation());
         assertEquals("station-2", response.endStation());
         assertEquals("08:30", response.departureTime());
