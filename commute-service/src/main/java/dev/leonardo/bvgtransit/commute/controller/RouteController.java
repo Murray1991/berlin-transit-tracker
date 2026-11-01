@@ -26,8 +26,8 @@ public class RouteController {
     }
 
     @DeleteMapping("/{routeId}")
-    public ResponseEntity<Void> deleteRoute(UUID userId, @PathVariable String routeId) {
-        routeService.deleteRoute(userId, Long.valueOf(routeId));
+    public ResponseEntity<Void> deleteRoute(UUID userId, @PathVariable UUID routeId) {
+        routeService.deleteRoute(userId, routeId);
         return ResponseEntity.noContent().build();
     }
 }

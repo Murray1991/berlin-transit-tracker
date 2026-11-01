@@ -8,9 +8,13 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 @Repository
 public interface RouteRepository extends JpaRepository<Route, Long> {
+
+    Optional<Route> findByPublicId(UUID publicId);
 
     @EntityGraph(attributePaths = {"users", "startStation", "endStation"})
     List<Route> findByDepartureTimeBetween(LocalTime from, LocalTime to);

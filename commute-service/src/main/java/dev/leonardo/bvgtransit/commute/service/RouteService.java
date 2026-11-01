@@ -92,7 +92,7 @@ public class RouteService {
 
         Route saved = routeRepository.save(route);
         return new RouteDto.Response(
-                saved.getId(),
+                saved.getPublicId(),
                 saved.getStartStation().getId(),
                 saved.getEndStation().getId(),
                 saved.getDepartureTime().toString());
@@ -115,7 +115,7 @@ public class RouteService {
     }
 
     @Transactional
-    public void deleteRoute(UUID userId, Long routeId) {
+    public void deleteRoute(UUID userId, UUID routeId) {
         User user =
                 userService
                         .getUser(userId)
@@ -125,7 +125,7 @@ public class RouteService {
                                                 HttpStatus.NOT_FOUND, "User not found"));
         Route route =
                 routeRepository
-                        .findById(routeId)
+                        .findByPublicId(routeId)
                         .orElseThrow(
                                 () ->
                                         new ResponseStatusException(
