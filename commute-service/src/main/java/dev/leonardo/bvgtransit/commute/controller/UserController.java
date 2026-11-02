@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/users")
@@ -23,5 +24,14 @@ public class UserController {
         var response = userService.createUser();
         URI location = URI.create("/api/users/" + response.uuid());
         return ResponseEntity.created(location).body(response);
+    }
+
+    @GetMapping("/{userId}")
+    public ResponseEntity<Void> existsUser(@PathVariable UUID userId) {
+        if (!userService.existsUser(userId)) {
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity.ok().build();
     }
 }

@@ -35,6 +35,11 @@ public class UserService {
     }
 
     @Transactional
+    public boolean existsUser(UUID userId) {
+        return userRepository.findByPublicId(userId).isPresent();
+    }
+
+    @Transactional
     public void addRoute(UUID publicId, Route route) {
         User user =
                 userRepository
