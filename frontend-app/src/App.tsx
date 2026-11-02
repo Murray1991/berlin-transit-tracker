@@ -41,9 +41,23 @@ interface LiveAlert {
 
 let userPromise: Promise<User> | undefined;
 
-function getOrCreateUser(): Promise<User> {
+async function checkUser(userId: string): Promise<boolean> {
+    const response = await fetch(`/api/users/${userId}`, { method: "GET" });
+
+    if (response.status === 404) {
+        return false;
+    }
+
+    if (!response.ok) {
+        throw new Error(`Could not validate user: ${response.statusText}`);
+    }
+
+    return true;
+}
+
+async function getOrCreateUser(): Promise<User> {
     const savedId = localStorage.getItem("user-id");
-    if (savedId) {
+    if (savedId && (await checkUser(savedId))) {
         userPromise = Promise.resolve({uuid: savedId});
     }
 
