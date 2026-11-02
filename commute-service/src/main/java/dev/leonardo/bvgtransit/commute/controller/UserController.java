@@ -1,5 +1,6 @@
 package dev.leonardo.bvgtransit.commute.controller;
 
+import dev.leonardo.bvgtransit.commute.dto.RouteDto;
 import dev.leonardo.bvgtransit.commute.dto.UserDto;
 import dev.leonardo.bvgtransit.commute.service.UserService;
 
@@ -7,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -33,5 +35,11 @@ public class UserController {
         }
 
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/{userId}/routes")
+    public ResponseEntity<List<RouteDto.Response>> getRoutes(@PathVariable UUID userId) {
+        var routes = userService.getRoutes(userId);
+        return ResponseEntity.ok().body(routes);
     }
 }

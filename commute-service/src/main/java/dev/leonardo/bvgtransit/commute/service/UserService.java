@@ -1,5 +1,6 @@
 package dev.leonardo.bvgtransit.commute.service;
 
+import dev.leonardo.bvgtransit.commute.dto.RouteDto;
 import dev.leonardo.bvgtransit.commute.dto.UserDto;
 import dev.leonardo.bvgtransit.commute.model.Route;
 import dev.leonardo.bvgtransit.commute.model.User;
@@ -11,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -50,5 +52,23 @@ public class UserService {
                                                 HttpStatus.NOT_FOUND, "User not found"));
         route.addUser(user);
         user.addRoute(route);
+    }
+
+    @Transactional
+    public List<RouteDto.Response> getRoutes(UUID userId) {
+        return userRepository
+                .findByPublicId(userId)
+                .orElseThrow(
+                        () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"))
+                .getSavedRoutes()
+                .stream()
+                .map(
+                        route ->
+                                new RouteDto.Response(
+                                        route.getPublicId(),
+                                        route.getStartStation().getId(),
+                                        route.getEndStation().getId(),
+                                        route.getDepartureTime().toString()))
+                .toList();
     }
 }
