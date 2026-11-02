@@ -42,7 +42,7 @@ interface LiveAlert {
 let userPromise: Promise<User> | undefined;
 
 async function checkUser(userId: string): Promise<boolean> {
-    const response = await fetch(`/api/users/${userId}`, { method: "GET" });
+    const response = await fetch(`/api/users/${userId}`, {method: "GET"});
 
     if (response.status === 404) {
         return false;
@@ -53,6 +53,18 @@ async function checkUser(userId: string): Promise<boolean> {
     }
 
     return true;
+}
+
+async function fetchRoutes(userId: string): Promise<SavedRoute[]> {
+    const response = await fetch(`/api/users/${userId}/routes`, {
+        method: "GET",
+    })
+
+    if (!response.ok) {
+        throw new Error(`Could not fetch routes: ${response.status}`);
+    }
+
+    return (await response.json()) as SavedRoute[];
 }
 
 async function getOrCreateUser(): Promise<User> {
@@ -121,6 +133,8 @@ function App() {
     const [alerts, setAlerts] = useState<Record<number, LiveAlert>>([]);
     const [connected, setConnected] = useState(false);
     const [user, setUser] = useState<User | null>(null);
+    const [savedRoutes, setSavedRoutes] = useState<SavedRoute[]>([]);
+    const [routesLoading, setRoutesLoading] = useState<boolean>(true);
 
     useEffect(() => {
         fetchStations()
@@ -155,15 +169,36 @@ function App() {
         return () => ws.close();
     }, [user]);
 
-    const [savedRoutes, setSavedRoutes] = useState<SavedRoute[]>(() => {
-        try {
-            return JSON.parse(
-                localStorage.getItem("savedRoutes") ?? "[]",
-            ) as SavedRoute[];
-        } catch {
-            return [];
+    useEffect(() => {
+        if (!user) {
+            return;
         }
-    });
+
+        let active = true;
+        setRoutesLoading(active);
+
+        fetchRoutes(user.uuid)
+            .then((routes) => {
+                if (active) {
+                    setSavedRoutes(routes);
+                }
+            })
+            .catch((error) => {
+                if (active) {
+                    console.error("Could not fetch routes: ", error);
+                }
+            }).finally(() => {
+                if (active) {
+                    setRoutesLoading(false);
+                }
+            }
+        );
+
+        return () => {
+            active = false;
+        };
+    }, [user])
+
     const saveRoute = async (event: React.SubmitEvent<HTMLFormElement>) => {
         event.preventDefault();
 
@@ -178,10 +213,8 @@ function App() {
         };
 
         const created: SavedRoute = await createRoute(user.uuid, route);
-        const next: SavedRoute[] = [created, ...savedRoutes];
-        setSavedRoutes(next);
+        setSavedRoutes((current) => [created, ...current]);
 
-        localStorage.setItem("savedRoutes", JSON.stringify(next));
         setFrom(undefined);
         setTo(undefined);
     };
@@ -191,10 +224,6 @@ function App() {
             return;
         }
 
-        let filtered = savedRoutes.filter((sr) => sr.id !== id);
-        setSavedRoutes(filtered);
-        localStorage.setItem("savedRoutes", JSON.stringify(filtered));
-
         const query = new URLSearchParams({userId: user.uuid});
         const response = await fetch(`/api/routes/${id}?${query}`, {
             method: "DELETE",
@@ -203,6 +232,8 @@ function App() {
         if (!response.ok) {
             throw new Error(`Could not delete route: ${response.status}`);
         }
+
+        setSavedRoutes((current) => current.filter((sr) => sr.id !== id));
     };
 
     return (
@@ -271,8 +302,8 @@ function App() {
                             required
                         />
 
-                        <button type="submit" disabled={!from || !to || from == to}>
-                            Save Route
+                        <button type="submit" disabled={routesLoading || !user || !from || !to || from == to}>
+                            {routesLoading ? "Loading commutes..." : "Save Route"}
                         </button>
                     </form>
                 </section>
