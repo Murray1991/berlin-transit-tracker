@@ -58,7 +58,7 @@ async function checkUser(userId: string): Promise<boolean> {
 async function fetchRoutes(userId: string): Promise<SavedRoute[]> {
     const response = await fetch(`/api/users/${userId}/routes`, {
         method: "GET",
-    })
+    });
 
     if (!response.ok) {
         throw new Error(`Could not fetch routes: ${response.status}`);
@@ -187,17 +187,17 @@ function App() {
                 if (active) {
                     console.error("Could not fetch routes: ", error);
                 }
-            }).finally(() => {
+            })
+            .finally(() => {
                 if (active) {
                     setRoutesLoading(false);
                 }
-            }
-        );
+            });
 
         return () => {
             active = false;
         };
-    }, [user])
+    }, [user]);
 
     const saveRoute = async (event: React.SubmitEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -302,7 +302,10 @@ function App() {
                             required
                         />
 
-                        <button type="submit" disabled={routesLoading || !user || !from || !to || from == to}>
+                        <button
+                            type="submit"
+                            disabled={routesLoading || !user || !from || !to || from == to}
+                        >
                             {routesLoading ? "Loading commutes..." : "Save Route"}
                         </button>
                     </form>
@@ -349,20 +352,27 @@ function App() {
                     ) : (
                         <ul className="alert-list">
                             {Object.values(alerts).map((alert) => (
-                                <li className={`alert-card ${
-                                    alert.delay > 0 ? "alert-card--delayed" : "alert-card--live"
-                                }`} key={alert.routeId}>
-
+                                <li
+                                    className={`alert-card ${
+                                        alert.delay > 0 ? "alert-card--delayed" : "alert-card--live"
+                                    }`}
+                                    key={alert.routeId}
+                                >
                                     <div className="alert-route">
-                                        <strong>{alert.stopStartName} {" → "} {alert.stopEndName}</strong>
-                                        <strong>{savedRoutes
-                                            .find((route) => route.id === alert.routeId)
-                                            ?.departureTime.slice(0, 5) ?? "Unknown"}
+                                        <strong>
+                                            {alert.stopStartName} {" → "} {alert.stopEndName}
+                                        </strong>
+                                        <strong>
+                                            {savedRoutes
+                                                .find((route) => route.id === alert.routeId)
+                                                ?.departureTime.slice(0, 5) ?? "Unknown"}
                                         </strong>
                                     </div>
 
                                     <div className="alert-train">
-                                        <p>{alert.lineName} {alert.direction}</p>
+                                        <p>
+                                            {alert.lineName} {alert.direction}
+                                        </p>
                                     </div>
 
                                     <span>Departs: {alert.when.slice(0, 5)}</span>
@@ -371,7 +381,6 @@ function App() {
                                             ? "On time"
                                             : `${Math.ceil(alert.delay / 60)} min delay`}
                                     </p>
-
                                 </li>
                             ))}
                         </ul>
